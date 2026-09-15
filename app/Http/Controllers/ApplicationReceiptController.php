@@ -19,6 +19,8 @@ use PDF;
 use Carbon\Carbon;
 use DB;
 use Helper;
+use App\Exports\PendingExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ApplicationReceiptController extends Controller {
 
@@ -39,8 +41,19 @@ class ApplicationReceiptController extends Controller {
 		$corses = CourseMaster::get();
 		$centers = CenterMaster::get();
 
+		// $applicant = ApplicationForm::query()
+		// 															->leftJoin('application_form', 'application_form.reg_id', '=', 'registration_form.id')
+		// 															->select([
+		// 											            'application_form.id as application_id',
+		// 											            'registration_form.first_name as first_name',
+		// 											            'registration_form.mid_name as mid_name',
+		// 											            'registration_form.last_name as last_name',            
+		// 											        ])
+		// 											        ->orderBy('registration_form.first_name', 'ASC')
+		// 											        ->get();
+	  // dd($applicant);
 		$applicant = ApplicationForm::get();
-
+		
 		$user_app_id = Helper::getApplicationIdByEmiId(Auth::guard()->user()->email);
  	
 		// dd($user_app_id);
@@ -49,7 +62,26 @@ class ApplicationReceiptController extends Controller {
 				                    $qu->whereNull('deleted_at');
 				                });
 
-				                if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+				                // New code 16.09.2026
+								if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+									$authUser = Auth::guard()->user();
+									$isCounselor = in_array('counselor', $authUser->roles()->pluck('slug')->toArray());
+
+									if ($isCounselor) {
+										$q->whereHas('application', function ($qu) use ($authUser) {
+											$qu->where('created_by', $authUser->id);
+										});
+									} else {
+										$q->whereHas('application', function ($qu) use ($authUser) {
+											$qu->whereHas('regDetails', function ($qur) use ($authUser) {
+												$qur->where('center_name', $authUser->branch_id);
+											});
+										});
+									}
+								}
+
+								// Old code of 16.09.2026
+				                /*if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
 					            	// $q->whereHas('regDetails', function ($qu) use ($request) {
 					             //        $qu->where('center_name',Auth::guard()->user()->branch_id);
 					             //    });
@@ -60,7 +92,7 @@ class ApplicationReceiptController extends Controller {
 						                });
 						            });
 					                
-					            }
+					            }*/
 
 					            if(!empty($user_app_id->id)){
 					            	$q->where('application_id', $user_app_id->id);
@@ -111,6 +143,8 @@ class ApplicationReceiptController extends Controller {
 		$corses = CourseMaster::get();
 		$centers = CenterMaster::get();
 
+		$applicant = ApplicationForm::get();
+
 		$user_app_id = Helper::getApplicationIdByEmiId(Auth::guard()->user()->email);
  	
 		// dd($request->from_date);
@@ -118,19 +152,39 @@ class ApplicationReceiptController extends Controller {
 								$q->whereHas('application', function ($qu) use ($request) {
 				                    $qu->whereNull('deleted_at');
 				                });
+								// New code 16.09.2026
+                                  if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+                                    $authUser = Auth::guard()->user();
+                                    $isCounselor = in_array('counselor', $authUser->roles()->pluck('slug')->toArray());
 
-				                if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+                                    if ($isCounselor) {
+                                        $q->whereHas('application', function ($qu) use ($authUser) {
+                                            $qu->where('created_by', $authUser->id);
+                                        });
+                                    } else {
+                                        $q->whereHas('application', function ($qu) use ($authUser) {
+                                            $qu->whereHas('regDetails', function ($qur) use ($authUser) {
+                                                $qur->where('center_name', $authUser->branch_id);
+                                            });
+                                        });
+                                    }
+                                }
+          
+          
+          						// Old code of 16.09.2026
+				                /*if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
 					            	// $q->whereHas('regDetails', function ($qu) use ($request) {
 					             //        $qu->where('center_name',Auth::guard()->user()->branch_id);
 					             //    });
 
 				                	$q->whereHas('application', function ($qu) use ($request) {
 						                $qu->whereHas('regDetails', function ($qur) use ($request) {
-						                    $qur->where('center_name', Auth::guard()->user()->branch_id);
+						                    //$qur->where('center_name', Auth::guard()->user()->branch_id);
+				    						$qur->where('created_by', Auth::guard()->id());
 						                });
 						            });
 					                
-					            }
+					            }*/
 
 					            if(!empty($user_app_id->id)){
 					            	$q->where('application_id', $user_app_id->id);
@@ -154,6 +208,11 @@ class ApplicationReceiptController extends Controller {
 						                $qu->where('application_id', $request->search_by_app_id);
 						            });
 					            }
+					            if ($request->has('students_app_id') && !empty($request->students_app_id) ){
+					        		$q->whereHas('application', function ($qu) use ($request) {
+						                $qu->where('application_id', $request->students_app_id);
+						            });
+					            }
 							})
 							->where(function ($qp) use ($request) {
 								$qp->where('payment_type','');
@@ -171,7 +230,74 @@ class ApplicationReceiptController extends Controller {
                             }
                         })->get();
 
-		return view('application-receipt.index', compact('title', 'applications_emi','centerDetails','request','user_app_id'));
+		return view('application-receipt.index', compact('title', 'applications_emi','centerDetails','request','user_app_id', 'applicant'));
+
+	}
+
+	public function pendingExport(Request $request) {
+
+		$title = 'Pending Report';
+
+		$applications_emi = ApplicationFormEmi::where(function ($q) use ($request) {
+                $q->whereHas('application', function ($qu) use ($request) {
+                            $qu->whereNull('deleted_at');
+                        });
+
+                        if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+                        // $q->whereHas('regDetails', function ($qu) use ($request) {
+                       //        $qu->where('center_name',Auth::guard()->user()->branch_id);
+                       //    });
+
+                          $q->whereHas('application', function ($qu) use ($request) {
+                            $qu->whereHas('regDetails', function ($qur) use ($request) {
+                                $qur->where('center_name', Auth::guard()->user()->branch_id);
+                            });
+                        });
+                          
+                      }
+
+                      if(!empty($user_app_id->id)){
+                        $q->where('application_id', $user_app_id->id);
+                      }
+
+                        if (!empty($request->input('from_date') && !empty($request->input('to_date')))) 
+                        {
+                          $datef = $request->from_date;
+                          $dateto = $request->to_date;
+                          $q->whereBetween('emi_dates', [$datef, $dateto]);
+                      }
+                      if ($request->has('search_by_center') && !empty($request->search_by_center) ){
+                      $q->whereHas('application', function ($qu) use ($request) {
+                            $qu->whereHas('regDetails', function ($qur) use ($request) {
+                                $qur->where('center_name', $request->search_by_center);
+                            });
+                        });
+                      }
+                      if ($request->has('search_by_app_id') && !empty($request->search_by_app_id) ){
+                      $q->whereHas('application', function ($qu) use ($request) {
+                            $qu->where('application_id', $request->search_by_app_id);
+                        });
+                      }
+                      if ($request->has('students_app_id') && !empty($request->students_app_id) ){
+                      $q->whereHas('application', function ($qu) use ($request) {
+                            $qu->where('application_id', $request->students_app_id);
+                        });
+                      }
+              })
+              ->where(function ($qp) use ($request) {
+                $qp->where('payment_type','');
+                $qp->orWhereNull('payment_type');
+              })              
+              ->orderBy('emi_dates','asc')
+              ->orderBy('id', 'asc')
+              ->get();
+		
+
+		$data = [
+			'applications_emi' => $applications_emi
+		];
+
+		return Excel::download(new PendingExport($data), 'pending-emi-reports.xlsx');
 
 	}
 
@@ -188,16 +314,35 @@ class ApplicationReceiptController extends Controller {
 								$q->whereHas('application', function ($qu) use ($request) {
 				                    $qu->whereNull('deleted_at');
 				                });
+								// New code 16.09.2026
+          						if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+                                    $authUser = Auth::guard()->user();
+                                    $isCounselor = in_array('counselor', $authUser->roles()->pluck('slug')->toArray());
 
-				                if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
+                                    if ($isCounselor) {
+                                        $q->whereHas('application', function ($qu) use ($authUser) {
+                                            $qu->where('created_by', $authUser->id);
+                                        });
+                                    } else {
+                                        $q->whereHas('application', function ($qu) use ($authUser) {
+                                            $qu->whereHas('regDetails', function ($qur) use ($authUser) {
+                                                $qur->where('center_name', $authUser->branch_id);
+                                            });
+                                        });
+                                    }
+                                }
+          
+          						// Old code of 16.09.2026
+				                /*if(Auth::guard()->user()->is_admin != 1 && empty($user_app_id->id)){
 				                	
 				                	$q->whereHas('application', function ($qu) use ($request) {
 						                $qu->whereHas('regDetails', function ($qur) use ($request) {
-						                    $qur->where('center_name', Auth::guard()->user()->branch_id);
+						                    //$qur->where('center_name', Auth::guard()->user()->branch_id);
+				    						$qur->where('created_by', Auth::guard()->id());
 						                });
 						            });
 					                
-					            }
+					            }*/
 
 					            if(!empty($user_app_id->id)){
 					            	$q->where('application_id', $user_app_id->id);
@@ -231,7 +376,7 @@ class ApplicationReceiptController extends Controller {
 								$qp->where('payment_type','!=','');
 								$qp->orWhereNotNull('payment_type');
 							})
-							->whereNotNull('updated_by')
+							->where('updated_by', '>', 0)
 							->orderBy('update_date','desc')
 				            // ->orderBy('created_at','desc')
 							// ->orderBy('id', 'desc')
@@ -384,12 +529,12 @@ class ApplicationReceiptController extends Controller {
 
 			$input = $request->all();
 
-			$api = new Api('rzp_live_G4haDmHJPHcZJE', 'ITpXo4MV4x6GyK');
+			$api = new Api('rzp_test_LdMBBcASc883Xj', 'hBwVtJYHA6se3WFXwDvMyiwr');
 
-			// $api = new Api('rzp_test_F8PJXr8T0a9huk', 'uIwWjSUQyZCz1mhqU5CkTj3T');
+			// $api = new Api('rzp_test_61sqZ6hFB2BlNI', '5lv0R9Vb5zGBjE13Vxbnolkw');
   
 	        $payment = $api->payment->fetch($input['razorpay_payment_id']);
-	  		// dd($payment);
+	  
 	        if(count($input)  && !empty($input['razorpay_payment_id'])) {
 	        	//\DB::beginTransaction();
 	            try {
@@ -409,70 +554,81 @@ class ApplicationReceiptController extends Controller {
 
 						$user = User::find(Auth::guard()->user()->id);
 						$center_detials = CenterMaster::find($user->branch_id);
-									         
+						// $current_amount = $center_detials->center_amount - ($request->ammount/100);
+
+						// $use_amount = (($request->ammount/118)*100)/100;
+
+						// $course_update = CenterMaster::where('id', $user->branch_id)
+			   //              ->update([
+			   //              'use_amount' => number_format($use_amount,2, '.', '')
+			   //          ]);
+
+						//$use_amount = $center_detials->use_amount + ($request->ammount/100);
+            			
+			         //   $course_update = CenterMaster::where('id', $user->branch_id)
+			         //       ->update([
+			         //       'use_amount' => $use_amount
+			         //   ]);
+			         
 			            $use_amount = $center_detials->use_amount + ($request->ammount/100);
 					
-    					$center_amount = $center_detials->center_amount - ($request->ammount/100);
-                		
-                		$reg_details = Helper::getRegPhoneNumberByEmiId($request->ids[$i]);
-
+    					$center_amount = $center_detials->center_amount - $use_amount;
+                			
     		            $course_update = CenterMaster::where('id', $reg_details->center_name)
     		                ->update([
     		                'center_amount' => $center_amount,
     		                'use_amount' => $use_amount
     		            ]);
 
-				// 		if(!empty($request->emi_payment_type[$i])){
-				// 			$reg_details = Helper::getRegPhoneNumberByEmiId($request->ids[$i]);
-				// 			$your_phone = $reg_details->mobile_no;
-				// 			//dd($your_phone);
-				// 			// SMS
-				//             $url = "https://sms11.infonetservices.in/api/api_http.php";
+						if(!empty($request->emi_payment_type[$i])){
+							$reg_details = Helper::getRegPhoneNumberByEmiId($request->ids[$i]);
+							$your_phone = $reg_details->mobile_no;
+							//dd($your_phone);
+							// SMS
+				            $url = "https://sms11.infonetservices.in/api/api_http.php";
 				            
-				//               $param = array(
-				//                   'username' => 'imagic',
-				//                   'password' => 'imagic122',
-				//                   'senderid' => 'iMAGIC',
-				//                   'text' => 'Dear '.$reg_details->mr_mrs.' '.$reg_details->first_name.' '.$reg_details->mid_name.' '.$reg_details->last_name.', we have received your IMAGIC course fee. Thanks for your payment from IMAGIC.',
-				//                   'route' => 'Informative',
-				//                   'type' => 'text',
-				//                   'datetime' => '2021-02-27 16:30:19',
-				//                   'to' => $your_phone,
-				//               );
+				              $param = array(
+				                  'username' => 'imagic',
+				                  'password' => 'imagic122',
+				                  'senderid' => 'iMAGIC',
+				                  'text' => 'Dear '.$reg_details->mr_mrs.' '.$reg_details->first_name.' '.$reg_details->mid_name.' '.$reg_details->last_name.', we have received your IMAGIC course fee. Thanks for your payment from IMAGIC.',
+				                  'route' => 'Informative',
+				                  'type' => 'text',
+				                  'datetime' => '2021-02-27 16:30:19',
+				                  'to' => $your_phone,
+				              );
 
-				//               $post = http_build_query($param, '', '&');
+				              $post = http_build_query($param, '', '&');
 
-				//               $ch = curl_init();
+				              $ch = curl_init();
 
-				//               curl_setopt($ch, CURLOPT_URL, $url);
-				//               curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-				//               curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-				//               curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-				//               curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
+				              curl_setopt($ch, CURLOPT_URL, $url);
+				              curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+				              curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+				              curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+				              curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
 
-				//               $result = curl_exec($ch);
+				              $result = curl_exec($ch);
 
-				//               if(curl_errno($ch)) {
-				//                   $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
-				//               } else {
-				//                   $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-				//                   switch($returnCode) {
-				//                       case 200 :
-				//                           break;
-				//                       default :
-				//                           $result = "HTTP ERROR: " . $returnCode;
-				//                   }
-				//               }
-				//               // dd($result);
-				//               curl_close($ch);
+				              if(curl_errno($ch)) {
+				                  $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
+				              } else {
+				                  $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+				                  switch($returnCode) {
+				                      case 200 :
+				                          break;
+				                      default :
+				                          $result = "HTTP ERROR: " . $returnCode;
+				                  }
+				              }
+				              // dd($result);
+				              curl_close($ch);
 
-				// 		}
+						}
 					}
-
 					
-					Session::flash('msg', 'Payment successful & application receipt updated sucessfully');
+	  				Session::flash('msg', 'Payment successful & application receipt updated sucessfully');
 					return redirect()->route('application-receipt.all');
-	  
 	            } catch (Exception $e) {
 	            	//\Db::rollback();
 	                return  $e->getMessage();
@@ -516,8 +672,7 @@ class ApplicationReceiptController extends Controller {
     			$center_detials = CenterMaster::find($reg_details->center_name);
     			$use_amount = $center_detials->use_amount + ($request->ammount/100);
     			$center_amount = $center_detials->center_amount;
-                
-                
+    
     			if($center_amount >= $or_amount){
     			    
     				$emi_data = DB::table('application_form_emi')->where('id', $request->ids[$i])
@@ -526,6 +681,7 @@ class ApplicationReceiptController extends Controller {
     						'cheque_no' => !empty($request->emi_payment_type[0]) ? $request->cheque_no[0] : '',
     						'extra_amount' => $request->extra_amount_add == 'on' ? $request->extra_amount : '',
     						'extra_amount_add' => $request->extra_amount_add,
+    						'remarks' => $request->remarks,
     						'updated_by' => !empty($request->emi_payment_type[0]) ? Auth::guard()->user()->id : '',
     						'update_date' => !empty($request->emi_payment_type[0]) ? date("Y-m-d") : '',
     					]);
@@ -539,62 +695,68 @@ class ApplicationReceiptController extends Controller {
     					
     					$center_amount = $center_detials->center_amount - ($request->ammount/100);
                 			
-    		            $course_update = CenterMaster::where('id', $reg_details->center_name)
-    		                ->update([
-    		                'center_amount' => $center_amount,
-    		                'use_amount' => $use_amount
-    		            ]);
-    		            
-    		            
+	            $course_update = CenterMaster::where('id', $reg_details->center_name)
+	                ->update([
+	                'center_amount' => $center_amount,
+	                'use_amount' => $use_amount
+	            ]);   
     
-    				// 	if(!empty($request->emi_payment_type[$i])){
-    				// 		$reg_details = Helper::getRegPhoneNumberByEmiId($request->ids[$i]);
-    				// 		$your_phone = $reg_details->mobile_no;
-    				// 		//dd($your_phone);
-    				// 		// SMS
-    			 //           $url = "https://sms11.infonetservices.in/api/api_http.php";
+    					if(!empty($request->emi_payment_type[$i])){
+    						$reg_details = Helper::getRegPhoneNumberByEmiId($request->ids[$i]);
+    						$your_phone = $reg_details->mobile_no;
+    						//dd($your_phone);
+    						// SMS
+    			            $url = "https://sms11.infonetservices.in/api/api_http.php";
     			            
-    			 //             $param = array(
-    			 //                 'username' => 'imagic',
-    			 //                 'password' => 'imagic122',
-    			 //                 'senderid' => 'iMAGIC',
-    			 //                 'text' => 'Dear '.$reg_details->mr_mrs.' '.$reg_details->first_name.' '.$reg_details->mid_name.' '.$reg_details->last_name.', we have received your IMAGIC course fee. Thanks for your payment from IMAGIC.',
-    			 //                 'route' => 'Informative',
-    			 //                 'type' => 'text',
-    			 //                 'datetime' => '2021-02-27 16:30:19',
-    			 //                 'to' => $your_phone,
-    			 //             );
+    			              $param = array(
+    			                  'username' => 'imagic',
+    			                  'password' => 'imagic122',
+    			                  'senderid' => 'iMAGIC',
+    			                  'text' => 'Dear '.$reg_details->mr_mrs.' '.$reg_details->first_name.' '.$reg_details->mid_name.' '.$reg_details->last_name.', we have received your IMAGIC course fee. Thanks for your payment from IMAGIC.',
+    			                  'route' => 'Informative',
+    			                  'type' => 'text',
+    			                  'datetime' => '2021-02-27 16:30:19',
+    			                  'to' => $your_phone,
+    			              );
     
-    			 //             $post = http_build_query($param, '', '&');
+    			              $post = http_build_query($param, '', '&');
     
-    			 //             $ch = curl_init();
+    			              $ch = curl_init();
     
-    			 //             curl_setopt($ch, CURLOPT_URL, $url);
-    			 //             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    			 //             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    			 //             curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-    			 //             curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
+    			              curl_setopt($ch, CURLOPT_URL, $url);
+    			              curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    			              curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    			              curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+    			              curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
     
-    			 //             $result = curl_exec($ch);
+    			              $result = curl_exec($ch);
     
-    			 //             if(curl_errno($ch)) {
-    			 //                 $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
-    			 //             } else {
-    			 //                 $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    			 //                 switch($returnCode) {
-    			 //                     case 200 :
-    			 //                         break;
-    			 //                     default :
-    			 //                         $result = "HTTP ERROR: " . $returnCode;
-    			 //                 }
-    			 //             }
-    			 //             // dd($result);
-    			 //             curl_close($ch);
+    			              if(curl_errno($ch)) {
+    			                  $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
+    			              } else {
+    			                  $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    			                  switch($returnCode) {
+    			                      case 200 :
+    			                          break;
+    			                      default :
+    			                          $result = "HTTP ERROR: " . $returnCode;
+    			                  }
+    			              }
+    			              // dd($result);
+    			              curl_close($ch);
     
-    				// 	}
+    					}
+    					Session::flash('msg', 'Payment successful & application receipt updated sucessfully');
+    					return redirect()->route('application-receipt.all');
+
+    				}else{
+    					Session::flash('msg', 'Payment successful & application receipt updated sucessfully');
+    					return redirect()->back();
     				}
-					Session::flash('msg', 'Payment successful & application receipt updated sucessfully');
-					return redirect()->route('application-receipt.all');
+
+    				
+						//return redirect()->route('application-receipt.all');
+				
                 }else{
 					Session::flash('error', "You didn't have credit, please contact to the main office.");
 					return redirect()->back();
@@ -743,7 +905,7 @@ class ApplicationReceiptController extends Controller {
 		}
 
 	}
-	
+
 	public function extraAmountUpdate(Request $request, $id) {
 
 		try {
