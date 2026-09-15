@@ -1,0 +1,179 @@
+@extends('layout')
+@section('title', $title)
+@section('content') 
+<div id="main" class="admin_main">
+          
+  <div class="admin-inn-contents">
+        <div class="container-fluid">
+          <h1 class="main-title">{{$title}}
+            <nav aria-label="breadcrumb">
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="{{route('dashboard')}}"><i class="fa fa-home" aria-hidden="true"></i>Dashboard</a></li>
+                
+                <li class="breadcrumb-item active" aria-current="page">{{$title}}</li>
+              </ul>
+          </nav>
+          </h1>
+          @if(Session::has('msg'))
+           <div class="alert alert-success alert-dismissible">
+             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+             {{session('msg')}}
+           </div>
+           @elseif(Session::has('error'))
+           <div class="alert alert-danger alert-dismissible">
+             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+             {{session('error')}}
+           </div>
+          @endif
+
+          @if(empty($user_app_id))
+          <div class="dashboard-materials">
+            <div class="relg-new-struct-add">
+                <form action="{{route('application-receipt.index')}}" method="get">
+                    <div class="filter_row">
+                      <div class="filter_div row">
+                        <div class="col-xs-12 col-md-2 col-sm-6">
+                          <div class="form-group">
+                            <div class="input-group date">
+                              <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                              </div>
+                              <input type="date" name="from_date" class="form-control pull-right datepicker" placeholder="From Date" value="{{!empty($request->from_date)? $request->from_date: '' }}">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-xs-12 col-md-2 col-sm-6">
+                          <div class="form-group">
+                            <div class="input-group date">
+                              <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                              </div>
+                              <input type="date" name="to_date" class="form-control pull-right datepicker" placeholder="To Date" value="{{!empty($request->to_date)?$request->to_date: '' }}">
+                            </div>
+                          </div>
+                        </div>
+
+
+                        <div class="col-xs-12 col-md-3 col-sm-6">
+                            <div class="form-group">
+                              <select class="form-control" name="search_by_center">
+                                  <option value="">select centre</option>
+                                  @foreach ($centerDetails as $center)
+                                  <option value="{{$center->id}}" {{Auth::guard()->user()->branch_id==$center->id ?'selected':''}} @if(!empty($request->search_by_center) && $request->search_by_center == $center->id) selected @endif>{{$center->name}}</option>
+                                  @endforeach
+                              </select>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-3 col-sm-6">
+                          <div class="form-group">
+                            <div class="input-group date">
+                              <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                              </div>
+                              <input type="text" name="search_by_app_id" class="form-control pull-right datepicker" placeholder="Search by Application ID" value="{{!empty($request->search_by_app_id)? $request->search_by_app_id: '' }}">
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-xs-12 col-md-3 col-sm-6">
+                          <button type="submit" class="btn btn-info">Search</button>
+                          <a href="{{route('application-receipt.index')}}" class="reset">Reset</a>
+
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+            </div>
+          </div>
+          @endif
+          
+          <div class="relg-list">
+            <div class="table-responsive">
+              <table class="listingtable">
+                <tr>
+                  <th width="15%">Registration No</th>
+                  <th width="15%">Application No</th>
+                  <th>Student Name</th>
+                  <th>Centre</th>
+                  <th>EMI Date</th>
+                  <th>EMI Amount</th>
+                  <th>Extra Charge</th>
+                  <th>Status</th>
+                  @if(App\Helpers\Helper::sidenavAccess('receipt_edit'))
+                  <th>Action</th>
+                  @endif
+                </tr>
+                @php $sl_no=1; $flag = []; @endphp
+                  @forelse($applications_emi as $emi)
+                  <tr>
+                    <td width="15%">{{@$emi->application->regDetails->roll_no}}</td>
+                    <td width="15%">{{@$emi->application->application_id}}</td>
+                    <td>{{@$emi->application->regDetails->first_name}} {{@$emi->application->regDetails->mid_name}} {{@$emi->application->regDetails->last_name}}</td>
+                    <td>{{App\Helpers\Helper::getCenterName(@$emi->application->regDetails->center_name)}}</td>
+                    <td>{{ date('d M Y', strtotime(@$emi->emi_dates)) }}</td>
+                    <td>{{$emi->emi_amounts}}</td>
+                    @php
+                      $current_date = date("Y-m-d");
+                      $extra = 0;
+                    @endphp
+                    <td>
+                      @if($emi->extra_amount_add != 'off' )
+                        @if($emi->emi_dates < $current_date)
+                          @php
+                            $now = time(); 
+                            $your_date = strtotime("+1 day", strtotime($emi->emi_dates));
+                            $datediff = $now - $your_date;
+                            $extra = round($datediff / (60 * 60 * 24)) * 50;
+                          @endphp
+                          {{round($datediff / (60 * 60 * 24)) * 50}}                        
+                        @endif
+                      @endif
+                    </td>
+                    <td>
+                      @if(@$emi->payment_type == 'Cash' || @$emi->payment_type == 'Cheque' || @$emi->payment_type == 'Online')
+                      Paid
+                      @else
+                      Pending
+                      @endif
+                    </td>
+                    @if(empty($user_app_id))
+                      @if(App\Helpers\Helper::sidenavAccess('receipt_edit'))
+                      <td>
+                        <a href="{{route('application-receipt.edit', ['id'=>$emi->application_id,'emi_id'=>$emi->id])}}" class="edit">
+                          <i class="fa fa-pencil" aria-hidden="true"></i>
+                        </a>
+
+                        @if(Auth::guard()->user()->is_admin == 1) 
+                         
+                        @php
+                          $deleteroute = route('application-receipt.delete', ['id'=>$emi->id]);
+                        @endphp
+                        <a href="javascript:void(0)" onclick="deleteData('{{$deleteroute}}','{{csrf_token()}}')" class="delete">
+                          <i class="fa fa-trash-o" aria-hidden="true"></i>
+                        </a>
+                        @endif
+                        
+                      </td>
+                      @endif
+                    @endif
+                  </tr>
+                  @empty
+                  <tr>
+                    <td colspan="9" style="text-align: center;">No data available</td>
+                  </tr>
+                 @endforelse
+                
+              </table>
+            </div>
+          </div>
+          <div class="pagination-sec">
+            {{$applications_emi->links()}}
+          </div>
+
+        </div>
+  </div>
+    
+</div>
+@endsection  

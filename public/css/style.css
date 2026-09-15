@@ -1,0 +1,479 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&display=swap');
+/* font-family: 'IBM Plex Sans', sans-serif; */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* font-family: 'Poppins', sans-serif; */
+
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* font-family: 'Raleway', sans-serif; */
+
+* {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.clear {
+    clear: both;
+}
+
+.clear:after {
+    clear: both;
+    position: relative;
+    content: "";
+    width: 100%;
+    display: table;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Raleway', sans-serif;;
+    color: #484848;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: #242424;
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+p {
+    margin: 0 0 25px;
+}
+
+.container {
+    max-width: 1170px;
+    margin: 0 auto;
+}
+
+a {
+    color: #242424;
+    text-decoration: none !important;
+    transition: all 0.5s ease-in-out;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+section {
+    padding: 70px 0;
+}
+
+input,
+button,
+select,
+a {
+    outline: none;
+}
+
+input:focus,
+button:focus,
+select:focus,
+textarea:focus,
+a:focus {
+    outline: none;
+}
+
+#mmenu-open-fade .mobileMenuSection {
+    display: none;
+}
+
+
+/* ******************************start login******************************** */
+
+.login-panel-hldr {
+    width: 100%;
+    max-width: 1000px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 12;
+}
+
+.login-bg {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #fff url(../images/admin-bg.jpg) no-repeat center;
+    background-position: center;
+    background-size: cover;
+    overflow: hidden;
+    position: relative;
+    z-index: 12;
+}
+
+.login-bg::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+    width: 100%;
+    background: rgb(255, 255, 255);
+    background: #404040;
+}
+
+.rail-log-lft-img {
+    /* background:radial-gradient(circle, rgba(44,212,255,1) 50%, rgba(31,51,255,1) 100%);*/
+    background: radial-gradient(circle, rgba(250, 255, 255, 1) 0%, rgba(250, 255, 188, 1) 25%, rgb(255 152 152) 90%);
+    height: 100%;
+}
+
+.login-left-hldr img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    mix-blend-mode: darken;
+}
+
+.login-right-hldr {
+    width: 40%;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 0 45px 2px rgb(0 0 0 / 20%);
+    background: #fff;
+}
+.loin-top-pic img{
+    width: 100%;
+}
+.loin-top-pic{
+    clip-path: circle(62.8% at 50% 0);
+    position: relative;
+}
+.login-form{position: relative;padding-bottom: 30px;}
+h1{
+    color: #fff;
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 38px;
+    margin-bottom: 30px;
+    text-align: center;
+    top: 0px;
+    width: 100%;
+    font-style: oblique;
+}
+.login-form form input.user {
+    background: url(../images/mail.svg) no-repeat;
+    background-size: 24px;
+    background-position: left 12px center;
+    padding-left: 45px;
+}
+
+.login-form form input[type="text"],
+.logonform form input[type="email"] {
+    padding-left: 20px;
+}
+
+.login-form form input {
+    padding: 12px 22px;
+    color: #555555;
+    border: 1px solid transparent;
+    border-bottom: 4px solid #ddd;
+    border-radius: 4px;
+    background: #f1f1f1;
+    width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+}
+
+.login-form form input.pass {
+    background: url(../images/padlock.svg) no-repeat;
+    background-size: 24px;
+    background-position: left 12px center;
+    padding-left: 45px;
+}
+
+.login-form form input#remembr-me {
+    width: 18px;
+    height: 18px;
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.login-form form label[for="remembr-me"] {
+    margin-bottom: 0;
+    width: calc(100% - 25px);
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.login-form .form-group {
+    margin-bottom: 15px;
+}
+
+.login-form form{
+    padding: 35px 35px 0px;
+    margin-top: 20px;
+}
+
+.login-form .form-inline {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.login-form .form-inline .form-group {
+    width: 49%;
+}
+.login-form .form-inline.f-p-grp{
+    margin: 20px 0 10px;
+}
+.Login-hd {
+    text-align: left;
+    padding-bottom: 10px;
+    margin: 0px;
+    font-size: 30px;
+    font-weight: 800;
+    font-family: 'Raleway', sans-serif;
+    text-transform: capitalize;
+    color: #fff;
+    position: relative;
+}
+.login-hd-hldr{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+.Login-hd::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 30px;
+    background: #fff;
+}
+
+.logo {
+    border-radius: 100%;
+    box-shadow: 0 0 0 5px #ddd;
+    max-width: 70px;
+    width: 100%;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%,0);
+    margin-top: -35px;
+}
+
+.logo img {
+    width: 100%;
+}
+
+.login-form label {
+    width: 100%;
+    color: #000;
+    display: block;
+    font-weight: 700;
+}
+
+.login-form .forget-pass {
+    width: 100%;
+    color: rgb(63, 141, 0);
+    display: inline-block;
+    text-align: right;
+    font-weight: 700;
+}
+
+.login-form form input[type="submit"] {
+    background:#2B2022;
+    color: #fff;
+    border: 1px solid #2B2022;
+    border-bottom: 1px solid #2B2022;
+    font-size: 20px;
+    padding: 12px;
+    transition: 0.5s;
+}
+.forgotpassword{
+    display: block;
+    text-align: center;
+    border: 1px solid #2B2022;
+    border-radius: 4px;
+    font-size: 20px;
+    padding: 12px;
+    transition: 0.5s;
+    color: #2B2022;
+    background: transparent;
+}
+.login-form form input[type="submit"]:hover {
+    background: transparent;
+    color: #2B2022;
+}
+.forgotpassword:hover{
+    background:#2B2022;
+    color: #fff;
+}
+
+.login-form .create-acc {
+    color: #0001d0;
+    display: inline-block;
+    font-weight: 700;
+}
+
+.login-form .create-acc:hover,
+.login-form .forget-pass:hover {
+    color: #484848;
+}
+.alert-dismissible{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-around;
+    color: #e50000;
+    font-weight: 600;
+}
+.alert-dismissible .close {
+    position: relative;
+    top: 0;
+    right: 0;
+    padding: 0;
+    color: inherit;
+}
+span.error{
+    color: red;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+
+
+/* update 07-03-2022 */
+.logo{
+	margin-top: 0px;
+	top: 15px;
+	box-shadow: none;
+}
+.login-form{
+	padding-top: 85px;
+}
+.Login-hd{
+	text-align: center;
+	color: #571c1e;
+	padding-bottom: 0;
+}
+.login-form form{
+	margin-top: 0;
+}
+.login-form form{
+	padding: 28px 35px 0;
+}
+.login-form form input.user{
+	padding-left: 25px;
+}
+.login-form form input.pass{
+	padding-left: 25px;
+}
+
+
+/* end login */
+
+.outsider-registration-hldr {
+    background-color: white;
+    padding: 20px;
+}
+
+@media(max-width: 1199px) {
+    .youtube{height: 500px !important;}
+    .login-panel-hldr{
+        max-width: 900px;
+    }
+    .login-right-hldr {
+        width: 45%;
+    }
+}
+
+@media (max-width:1023px) {
+    .youtube{height: 500px;}
+    /*start login */
+    .login-panel-hldr {
+        max-width: 700px;
+    }
+    
+    .logo{max-width: 60px;}
+    h1{
+        font-size: 25px;
+        line-height: 32px;
+    }
+    .login-form form {
+        padding: 20px 20px 0;
+        margin-top: 20px;
+    }
+    .login-form{padding-bottom: 20px;}
+    .login-hd-hldr{top: 45%;}
+    .Login-hd{font-size: 25px;}
+    .login-form form label[for="remembr-me"],.login-form .forget-pass{font-size: 14px;}
+
+    /* end login */
+}
+
+@media (max-width:767px) {
+    .youtube{height: 500px;}
+    .rail-log-lft-img {
+        display: none;
+    }
+    .login-panel-hldr {
+        max-width: 90%;
+    }
+    .Login-hd::after{width: 20px;}
+    .login-right-hldr {
+        width: 100%;
+        background: rgba(255,255,255,0.75);
+
+    }
+    .login-form .form-group {
+        margin-bottom: 10px;
+    }
+    .login-form .form-inline .form-group {
+        width: 100%;
+    }
+    .login-form .forget-pass {
+        text-align: left;
+        font-weight: 500;
+    }
+    .login-form form label[for="remembr-me"] {
+        width: calc(100% - 35px);
+        font-weight: 500;
+    }
+    .Login-hd {
+        margin: 12px auto 10px;
+        display: table;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    .login-form form input{
+        padding: 10px 22px;
+        border: 1px solid #999;
+    }
+    .loin-top-pic {
+        clip-path: circle(64% at 50% 0);
+    }
+    h1 {
+        font-size: 20px;
+        line-height: 25px;
+        position: relative;
+        margin: 0 0 20px;
+    }
+    
+}
