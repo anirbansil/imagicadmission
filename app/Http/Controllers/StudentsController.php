@@ -95,11 +95,30 @@ class StudentsController extends Controller {
             if (!empty($request->input('search_by_faculty')) ){
                 $q->where('faculty_id', $request->search_by_faculty);
             }
+            if(Auth::guard()->user()->roles[0]->slug == 'faculty'){
+                $falculty = FacultyMaster::where('phone_no',Auth::guard()->user()->phone_no)->latest()->first();
+                //dd($falculty);
+                if(!empty($falculty)){
+                     $q->where('faculty_id',$falculty->id);
+                }
+                
+            }
+            if(Auth::guard()->user()->roles[0]->slug == 'center'){
+             $q->whereHas('regDetails', function ($qu) use ($request) {
+                    $qu->where('center_name',Auth::guard()->user()->branch_id);
+                });
+            }
         })->where('batch_end_date','>=',$date)->orderBy('id', 'desc')->paginate(25);
         
         $centerDetails = CenterMaster::where('status',1)->get();
         $faculties = FacultyMaster::get();
-		return view('students-list.index', compact('title', 'students', 'faculties','request','centerDetails'));
+        if(Auth::guard()->user()->roles[0]->slug == 'faculty'){
+            $logged_in_faculty  = FacultyMaster::with('facultySubjects')->where('phone_no',Auth::user()->phone_no)->latest()->first();
+        }else{
+            $logged_in_faculty = "";
+        }
+
+		return view('students-list.index', compact('title', 'students', 'faculties','request','centerDetails','logged_in_faculty'));
 
 
 
@@ -108,6 +127,7 @@ class StudentsController extends Controller {
     public function MarksList(Request $request) {
         $title = "Module | Marks List";
         if (Auth::guard()->user()->is_admin == 1 ){
+
             $marks_list = StudentMarks::where(function ($q) use ($request) {
             if ($request->has('course_name') && !empty($request->course_name) ){
                 $q->where('course_name', $request->course_name);
@@ -117,6 +137,13 @@ class StudentsController extends Controller {
             }
             if (!empty($request->input('student')) && !empty($request->student) ){
                 $q->where('stdnt_id', $request->student);
+            }
+            if ($request->has('search_by_center') && !empty($request->search_by_center) ){
+            	$q->whereHas('student', function ($qu) use ($request) {
+	                $qu->whereHas('regDetails', function ($quu) use ($request) {
+	                    $quu->where('center_name', $request->search_by_center);
+	                });
+	            });
             }
             })->orderBy('id', 'desc')->paginate(10);
         }
@@ -148,17 +175,26 @@ class StudentsController extends Controller {
         ->groupBy('stdnt_id')
         ->paginate(10)->appends(request()->query());
         }
-        return view('module_marks_master.index',compact('title','marks_list','courses','students','module','request' ,'studentsMarks'));
+
+        $centerDetails = CenterMaster::where(function($q) use ($request) {
+                            if(Auth::guard()->user()->is_admin != 1){
+                                $q->where('id',Auth::guard()->user()->branch_id);
+                            }
+                        })->where('status',1)->get();
+        return view('module_marks_master.index',compact('title','marks_list','courses','students','module','request' ,'studentsMarks', 'centerDetails'));
     }
 
     public function AddMarks()  {
             $title = "Module | Marks Distribution";
-            $courses = CourseMaster::all();
-            return view('module_marks_master.create',compact('courses','title'));
+            $logged_in_faculty  = FacultyMaster::with('facultySubjects')->where('phone_no',Auth::user()->phone_no)->latest()->first();
+                $courses = CourseMaster::all();
+          
+            return view('module_marks_master.create',compact('courses','title','logged_in_faculty'));
     }
 
     public function SaveMarks(Request $request)  {
         $exits_array =[];
+        $exits_module_array = [];
         for($i=0;$i<count($request->module_name); $i++){
             $StudentMarks = StudentMarks::where('stdnt_id',$request->student[$i])->where('module_name',$request->module_name[$i])->count();
             if($StudentMarks == 0){
@@ -175,21 +211,29 @@ class StudentsController extends Controller {
             }else{
                 $students = ApplicationForm::with('regDetails')->find($request->student[$i]);
                 array_push($exits_array,$students->regDetails->first_name);
+                array_push($exits_module_array,$request->module_name[$i]);
+                
             }
         }
-        // if(!empty($exits_array)){
-        //     $student_name = implode(',',$exits_array);
-        //     Session::flash('msg', 'Student Marks Successfully added and '.$student_name.'marks added for modules.');
-        // }else{
-             Session::flash('msg', 'Student Marks Successfully added');
-        // }
        
+        if(!empty($exits_array)){
+            $student_name = implode(',',$exits_array);
+            $exits_module =  implode(',',$exits_module_array);
+            Session::flash('msg','Student Marks Successfully added and '.$student_name.' marks added for '.$exits_module.' modules.');
+        }else{
+             Session::flash('msg', 'Student Marks Successfully added');
+        }
         return redirect()->route('student.marks.index');
     }
 
     public function ModuleByCourse(Request $request ,$id)  {
-        $module = CourseModule::where('course_id',$request->id)->get();
-        $students =ApplicationForm::with('regDetails')->where('course',$request->id)->get();
+        $module = CourseModule::where('course_id',$request->id)->get(); 
+        if(Auth::guard()->user()->roles[0]->slug == 'faculty'){
+            $logged_in_faculty  = FacultyMaster::with('facultySubjects')->where('phone_no',Auth::user()->phone_no)->latest()->first();
+            $students =ApplicationForm::with('regDetails')->where('course',$request->id)->where('faculty_id',$logged_in_faculty->id)->get();
+        }else{
+            $students =ApplicationForm::with('regDetails')->where('course',$request->id)->get();
+        }
         $sub_module = CourseSubModule::where('course_id',$request->id)->get();
         return response()->json(['status' => 200, 'module' =>$module ,'students'=>$students,'sub_module'=>$sub_module]);
     }

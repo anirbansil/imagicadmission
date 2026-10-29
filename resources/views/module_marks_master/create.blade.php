@@ -29,10 +29,11 @@
           @endif
           <div class="dashboard-materials">
             <div class="newform">
-              <div class="mainform cmnpadding ">
+              <div class="mainform cmnpadding ModuleMarkstable">
                  <form role="form" action="{{ route('student.marks.save') }}" method="POST" enctype="multipart/form-data">
                  <input type="hidden" name="baseurl" id="baseurl" value="{{  url('')}}">
                  @csrf
+                 <div class="table-responsive ">
                  <table class="table table-bordered" id="item_table">
                               <tr>
                               <th>Course Name</th>
@@ -48,9 +49,18 @@
                               <tr class="append-dive" data-id="1">
                                  <td>
                                   <select name="course_name[]" class="form-control course_name" data-target="1"  id="course_name1" required><option value="">Select Course</option>
+                                    @if(Auth::user()->is_admin == 1)
                                     @foreach($courses as $course)
                                     <option value="{{$course->id}}">{{$course->name}}</option>
                                     @endforeach
+                                    @else
+                                    @php $subjets = @$logged_in_faculty->facultySubjects->pluck('subject')->toArray();  @endphp
+                                    @forelse($subjets as $subjet)
+                                    <option value="{{$subjet}}">{{@\App\Helpers\Helper::getCourseName(@$subjet)}}</option>
+                                    @empty
+                                    <option value="">Subjects Not found</option>
+                                    @endforelse
+                                    @endif
                                   </select>
                                 </td>
                                  <td>
@@ -69,13 +79,13 @@
                                   </select>
                                  </td>
                                  <td>
-                                    <input type="text" name="student_marks[]" class="form-control" required>
+                                    <input type="text" name="student_marks[]" class="form-control" max="100" required>
                                  </td>
                                  <td>
-                                    <input type="text" name="student_marksp[]" class="form-control" required>
+                                    <input type="text" name="student_marksp[]" class="form-control" max="100" required>
                                  </td>
                                  <td>
-                                      <input type="text" name="student_markstotal[]"  class="form-control disabled"  readonly>
+                                      <input type="text" name="student_markstotal[]" max="100"  class="form-control disabled"  readonly>
                                  </td>
                                  <td><button type="button" name="add" class="btn btn-success btn-sm add" id="add_new"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
                                  <button type="button" name="remove" class="btn btn-danger btn-sm remove-div remove_elm" style="display:none;" ><i class="fa fa-minus-circle"></i></button>
@@ -83,6 +93,7 @@
                               </tr>
                               <!-- @endfor -->
                            </table>
+                          </div>
                   <div class="form-group">
                     <input type="submit" value="Save" class="finalsubmit">
                   </div>

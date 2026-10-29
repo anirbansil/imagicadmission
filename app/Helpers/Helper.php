@@ -52,6 +52,17 @@ class Helper {
 
 	}
 
+	// True only for accounts whose roles are purely student ones (never for admins or staff
+	// who also hold another role). Outsider-only accounts are not included.
+	public static function isStudent($user = null) {
+		$user = $user ?: Auth::guard()->user();
+		if (!$user || $user->is_admin == 1) {
+			return false;
+		}
+		$roles = $user->roles->pluck('slug');
+		return $roles->contains('student') && $roles->diff(['student', 'outsider_student'])->isEmpty();
+	}
+
 
 
 	public static function checkIsReviewer() {
@@ -121,6 +132,25 @@ class Helper {
 	}
 
 	public static function getApplicationIdByEmiId($email){
+      	// Latest Code 16.09.2026
+        /*$user = User::where('email', $email)->first();
+        $roleSlugs = $user ? $user->roles()->pluck('slug')->toArray() : [];
+
+        if (!array_intersect($roleSlugs, ['student', 'outsider_student'])) {
+            return [];
+        }
+
+        $reg_details = RegistrationForm::where('email',$email)->orderBy('id','DESC')->first();
+
+        if(isset($reg_details->id)){
+            $app_details = ApplicationForm::where('reg_id',$reg_details->id)->first();
+        }else{
+            $app_details = [];
+        }
+
+        return $app_details;*/
+      
+		// Old code of 16.09.2026
 		$reg_details = RegistrationForm::where('email',$email)->orderBy('id','DESC')->first();
 
 		if(isset($reg_details->id)){

@@ -203,8 +203,9 @@
                         @if($errors->has('admission_fee'))
                         <span class="error">{{$errors->first('admission_fee')}}</span>
                         @endif
-                      </div>
 
+                      </div>
+                      <input type="hidden" name="min_admission_fee" id="min_admission_fee" value="">
                       <div class="form-group">
                         <label>Pay on Admission
                           <span class="required_field">*</span>
@@ -213,6 +214,7 @@
                         @if($errors->has('pay_on_admission'))
                         <span class="error">{{$errors->first('pay_on_admission')}}</span>
                         @endif
+                        <span class="error admission_fee_error"></span>
                       </div>
                       <div class="form-group">
                         <label>Balance Rs

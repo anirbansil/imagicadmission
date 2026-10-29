@@ -40,9 +40,9 @@
                       @php $con = 1; @endphp
                       @foreach($apllication->applicationEmi as $emi)
                       @if($request->emi_id == $emi->id) 
-                                           
+                      <input type="hidden" name="ids[]" id="emiid" value="{{$emi->id}}">                   
                       <div class="five_column six_column">
-                        <input type="hidden" name="ids[]" id="emiid" value="{{$emi->id}}">
+                        <input type="hidden" name="ids[]" value="{{$emi->id}}">
                         <div class="form-group">
                           <label>No.</label>
                           <input type="text" name="sl_no[]" id="sl_no" class="form-control required_field sl_no" value="{{$con}}" readonly>
@@ -98,7 +98,7 @@
                           </div>
                           @endif
                           <input type="hidden" name="ammount" value="{{$ammount}}">
-                        
+                          
                       </div>
                       @endif
                       @php $con++; @endphp
@@ -115,6 +115,10 @@
                         data-theme.color="#ff7529">
                   </script> -->
                   @endif
+                  <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea  name="remarks">{{$emi->remarks}}</textarea>
+                  </div>
                   <div class="form-group">
                     <input type="submit" value="Update" class="finalsubmit">
                   </div>

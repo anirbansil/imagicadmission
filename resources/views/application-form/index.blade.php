@@ -72,14 +72,14 @@
                             </div>
                             <div class="col-xs-12 col-md-3 col-sm-6">
                                 <div class="form-group">
-                            <select class="form-control" name="search_by_course">
-                                <option value="">select course</option>
-                                @foreach ($courseDetails as $course)
-                                    <option value="{{ $course->id }}"
-                                        @if (!empty($request->search_by_course) && $request->search_by_course == $course->id) selected @endif>
-                                        {{ $course->name }}</option>
-                                @endforeach
-                            </select>
+                                  <select class="form-control" name="search_by_course">
+                                      <option value="">select course</option>
+                                      @foreach ($courseDetails as $course)
+                                          <option value="{{ $course->id }}"
+                                              @if (!empty($request->search_by_course) && $request->search_by_course == $course->id) selected @endif>
+                                              {{ $course->name }}</option>
+                                      @endforeach
+                                  </select>
                                 </div>
                             </div>
 
@@ -87,7 +87,7 @@
                             <div class="col-xs-12 col-md-12 col-sm-6">
                                 <div class="form-group">
                                     <input type="text" class="form-control" name="input_search"
-                                        placeholder="Search by Reg No., App No., student name, qualification"
+                                        placeholder="Search by App No., student name, qualification"
                                         value="{{ !empty($request->input_search) ? $request->input_search : '' }}">
                                 </div>
                             </div>

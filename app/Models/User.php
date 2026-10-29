@@ -68,6 +68,17 @@ class User extends Authenticatable
         return $this->hasMany('role_users', 'user_id');
 
     }
+  
+    public function hasRole($roles)
+    {
+        if (!is_array($roles)) {
+            $roles = [$roles];
+        }
+
+        return $this->roles()
+                    ->whereIn('slug', $roles)   // or 'name', see note below
+                    ->exists();
+    }
 
     public function hasAccess(array $permissions): bool {
         // check if the permission is available in any role

@@ -19,10 +19,10 @@ class CourseMaster extends Model
      * @var array
      */
     protected $fillable = [
-        'name','duration','fees', 'number_of_emi','gst','status','created_by','updated_by'
+        'name','duration','fees', 'min_admission_fee', 'number_of_emi','gst','status','created_by','updated_by'
     ];
     
     public function courseModule() { 
-        return $this->hasmany(CourseModule::class, 'course_id', 'id');
+        return $this->hasmany(CourseModule::class, 'course_id', 'id')->orderBy('id','asc');
     }
 }

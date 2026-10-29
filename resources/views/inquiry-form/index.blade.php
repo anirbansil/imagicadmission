@@ -129,10 +129,10 @@
                       @if(!in_array('counselor', $roleArray))
                         @if(!$inquires->isEmpty())
                             <div class="add-new-strc">
-                              <a class="add-new-strc-btn" href="{{route('inquiry-export',['from_date'=>$request->from_date,'to_date'=>$request->to_date,'dashboard'=>$request->dashboard,'search_by_year'=>$request->search_by_year,'search_by_center'=>$request->search_by_center,'status'=>$request->status])}}">Export to Excel</a>
+                              <a class="add-new-strc-btn" href="{{route('inquiry-export',['from_date'=>$request->from_date,'to_date'=>$request->to_date,'dashboard'=>$request->dashboard,'search_by_year'=>$request->search_by_year,'search_by_center'=>$request->search_by_center,'search_by_course'=>$request->search_by_course,'status'=>$request->status])}}">Export to Excel</a>
                             </div>
                         @endif
-                        @endif
+						@endif
                         <br>
                         <div class="add-new-strc">
                             <a class="add-new-strc-btn" href="{{ route('inquiry-form.create') }}">Add Inquiry</a>

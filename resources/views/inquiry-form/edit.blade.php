@@ -280,10 +280,16 @@
                     </div>
 
                   </div>
-                  <div class="form-group">
-                    <a href="{{ url()->previous() }}" style="font-size: 20px;width: 200px;margin-left: auto;border-radius: 6px;padding: 15px;transition: 0.5s;background: #4b9d0c26;color: rgb(63, 141, 0);border: 1px solid rgb(63, 141, 0);">Back</a>
-                    <input type="submit" value="Save" class="finalsubmit">
-                  </div>
+                  <br>
+                  <!-- <div class="form-inline"> -->
+                    <div class="form-group">
+                      <a href="{{ url()->previous() }}" style="font-size: 20px;width: 200px;margin-left: auto;border-radius: 6px;padding: 15px;transition: 0.5s;background: #4b9d0c26;color: rgb(63, 141, 0);border: 1px solid rgb(63, 141, 0);">Back</a>  
+                                      
+                    </div>
+                    <div class="form-group" style="margin-right: 120px;">
+                      <input type="submit" value="Save" class="finalsubmit">  
+                    </div>
+                  <!-- </div> -->
                  </form>
               </div>
             </div>

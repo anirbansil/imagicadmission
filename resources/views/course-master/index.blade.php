@@ -39,6 +39,7 @@
                   <th>Course Name</th>
                   <th>Duration</th>
                   <th>Fees</th>
+                  <th>Min Admission Fee</th>
                   <th>Include GST</th>
                   <th>Status</th>
                   <th>Action</th>
@@ -50,6 +51,7 @@
                     <td>{{@$category->name}}</td>
                     <td>{{@$category->duration}} Days</td>
                     <td>{{@$category->fees}}</td>
+                    <td>{{@$category->min_admission_fee}}</td>
                     <td>{{@$category->gst == 1 ? 'Yes' : 'No'}}</td>
                     <td>{{@$category->status == 1 ? 'Active' : 'Inactive'}}</td>
                     <td>

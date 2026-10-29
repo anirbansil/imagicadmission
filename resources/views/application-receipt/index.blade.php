@@ -76,6 +76,17 @@
                             </div>
                           </div>
                         </div>
+
+                        <div class="col-xs-12 col-md-3 col-sm-6">
+                            <div class="form-group">
+                              <select class="form-control" name="students_app_id">
+                                  <option value="">Select Student</option>
+                                  @foreach ($applicant as $students_app_id)
+                                  <option value="{{$students_app_id->application_id}}" @if(!empty($request->students_app_id) && $request->students_app_id == $students_app_id->application_id) selected @endif>{{@$students_app_id->regDetails->first_name}} {{@$students_app_id->regDetails->mid_name}} {{@$students_app_id->regDetails->last_name}}</option>
+                                  @endforeach
+                              </select>
+                            </div>
+                        </div>
                         
                         <div class="col-xs-12 col-md-3 col-sm-6">
                           <button type="submit" class="btn btn-info">Search</button>
@@ -88,7 +99,12 @@
             </div>
           </div>
           @endif
-          
+          @if(!$applications_emi->isEmpty())
+              <div class="add-new-strc">
+                <a class="add-new-strc-btn" href="{{route('pending-export',['from_date'=>$request->from_date,'to_date'=>$request->to_date,'search_by_center'=>$request->search_by_center,'search_by_app_id'=>$request->search_by_app_id,'students_app_id'=>$request->students_app_id])}}">Export to Excel</a>
+              </div>
+          @endif
+          <br>
           <div class="relg-list">
             <div class="table-responsive">
               <table class="listingtable">
@@ -103,6 +119,7 @@
                   <th>Status</th>
                   @if(App\Helpers\Helper::sidenavAccess('receipt_edit'))
                   <th>Action</th>
+                  <th>Remarks</th>
                   @endif
                 </tr>
                 @php $sl_no=1; $flag = []; @endphp
@@ -144,7 +161,7 @@
                         <a href="{{route('application-receipt.edit', ['id'=>$emi->application_id,'emi_id'=>$emi->id])}}" class="edit">
                           <i class="fa fa-pencil" aria-hidden="true"></i>
                         </a>
-
+                        &nbsp&nbsp&nbsp&nbsp
                         @if(Auth::guard()->user()->is_admin == 1) 
                          
                         @php
@@ -158,6 +175,7 @@
                       </td>
                       @endif
                     @endif
+                    <td>{{$emi->remarks}}</td>
                   </tr>
                   @empty
                   <tr>

@@ -69,12 +69,24 @@ class DashboardController extends Controller {
 
         $total_inquiry = InquiryForm::where(function($q) use ($request) {
 
-                            if(Auth::guard()->user()->is_admin != 1){
+                            //if(Auth::guard()->user()->is_admin != 1){
 
-                                // $q->where('center_name',Auth::guard()->user()->branch_id);
-                                $q->where('created_by', Auth::guard()->id());
+                                //$q->where('center_name',Auth::guard()->user()->branch_id);
+                               //$q->where('created_by', Auth::guard()->id());
 
+                            //}
+
+          					$user = User::find(Auth::id());
+
+							if ($user->hasRole(['superadmin', 'admin'])) {
+                                // Show all records
+                            } elseif ($user->hasRole('center')) {
+                                $q->where('center_name', $user->branch_id);
+                            } elseif ($user->hasRole('counselor')) {
+                                $q->where('center_name', $user->branch_id)
+                                  ->where('created_by', $user->id);
                             }
+          
 
                         })->whereMonth('created_at', Carbon::now()->month)->count();
 
@@ -82,11 +94,22 @@ class DashboardController extends Controller {
 
         $today_inquiry = InquiryForm::where(function($q) use ($request) {
 
-                            if(Auth::guard()->user()->is_admin != 1){
+                            //if(Auth::guard()->user()->is_admin != 1){
 
-                                // $q->where('center_name',Auth::guard()->user()->branch_id);
-                                $q->where('created_by', Auth::guard()->id());
+                                //$q->where('center_name',Auth::guard()->user()->branch_id);
+                              //$q->where('created_by', Auth::guard()->id());
 
+                            //}
+          
+          					$user = User::find(Auth::id());
+
+							if ($user->hasRole(['superadmin', 'admin'])) {
+                                // Show all records
+                            } elseif ($user->hasRole('center')) {
+                                $q->where('center_name', $user->branch_id);
+                            } elseif ($user->hasRole('counselor')) {
+                                $q->where('center_name', $user->branch_id)
+                                  ->where('created_by', $user->id);
                             }
 
                         })->whereDate('created_at', Carbon::today())->count();
@@ -95,11 +118,22 @@ class DashboardController extends Controller {
 
         $today_hot_inquiry = InquiryForm::where(function($q) use ($request) {
 
-                            if(Auth::guard()->user()->is_admin != 1){
+                            //if(Auth::guard()->user()->is_admin != 1){
 
-                                // $q->where('center_name',Auth::guard()->user()->branch_id);
-                                $q->where('created_by', Auth::guard()->id());
+                                //$q->where('center_name',Auth::guard()->user()->branch_id);
+                              //$q->where('created_by', Auth::guard()->id());
 
+                            //}
+          
+          					$user = User::find(Auth::id());
+
+							if ($user->hasRole(['superadmin', 'admin'])) {
+                                // Show all records
+                            } elseif ($user->hasRole('center')) {
+                                $q->where('center_name', $user->branch_id);
+                            } elseif ($user->hasRole('counselor')) {
+                                $q->where('center_name', $user->branch_id)
+                                  ->where('created_by', $user->id);
                             }
 
                         })->where('status',1)->whereDate('date_of_reg', Carbon::today())->count();

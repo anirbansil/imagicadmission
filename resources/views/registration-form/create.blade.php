@@ -388,7 +388,7 @@
 
                       </label>
 
-                      <input type="email" name="email" class="form-control required_field" value="{{@$inq_data->email ? $inq_data->email:old('email')}}" autocomplete="off">
+                      <input type="text" name="email" class="form-control required_field" value="{{@$inq_data->email ? $inq_data->email:old('email')}}">
 
                       @if($errors->has('email'))
 

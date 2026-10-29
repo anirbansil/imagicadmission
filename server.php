@@ -18,4 +18,21 @@ if ($uri !== '/' && file_exists(__DIR__.'/public'.$uri)) {
     return false;
 }
 
-require_once __DIR__.'/public/index.php';
+// The project root is the web root (cPanel layout), so views reference assets
+// as asset('public/...'). Serve those from the project folder, limited to /public/.
+if (strpos($uri, '/public/') === 0 && strpos($uri, '..') === false && is_file(__DIR__.$uri)) {
+    $mimeTypes = [
+        'css' => 'text/css', 'js' => 'application/javascript', 'json' => 'application/json',
+        'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif',
+        'svg' => 'image/svg+xml', 'webp' => 'image/webp', 'ico' => 'image/x-icon',
+        'woff' => 'font/woff', 'woff2' => 'font/woff2', 'ttf' => 'font/ttf', 'eot' => 'application/vnd.ms-fontobject',
+        'pdf' => 'application/pdf', 'mp4' => 'video/mp4',
+    ];
+    $extension = strtolower(pathinfo($uri, PATHINFO_EXTENSION));
+    header('Content-Type: '.($mimeTypes[$extension] ?? mime_content_type(__DIR__.$uri)));
+    header('Content-Length: '.filesize(__DIR__.$uri));
+    readfile(__DIR__.$uri);
+    return true;
+}
+
+require_once __DIR__.'/index.php';

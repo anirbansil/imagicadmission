@@ -66,7 +66,16 @@
                         @endif
                       </div>
                     </div>
-
+                    <div class="col-xs-12 col-md-4 col-sm-6">
+                      <div class="form-group">
+                        <label>Minimum Admission Fees
+                        </label>
+                        <input type="number" name="min_admission_fee" class="form-control required_field" value="{{old('min_admission_fee')}}">
+                        @if($errors->has('min_admission_fee'))
+                        <span class="error">{{$errors->first('min_admission_fee')}}</span>
+                        @endif
+                      </div>
+                    </div>
                     <div class="col-xs-12 col-md-4 col-sm-6">
                       <div class="form-group">
                         <label>Number of EMI </label>
@@ -122,15 +131,13 @@
                           <th>Date</th>
                           <th>Action</th>
                           </tr>
-                          @for($a=1; $a < 2; $a++ )
-                          <tr class="append-dive">
-                              <td><input class="form-control" type="text" name="module[]" id="module" required></td>
-                              <td><input class="form-control" type="date" name="module_date[]" id="module_date[]"></td>
-                              <td><button type="button" name="add" class="btn btn-success btn-sm add" id="add_new"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                          <tr class="append-dive" data-id="1">
+                              <td><input class="form-control" type="text" name="module[]" id="module_1" required></td>
+                              <td><input class="form-control" type="date" name="module_date[]" id="module_date_1"></td>
+                              <td><button type="button" name="add" class="btn btn-success btn-sm add" data-id="1" id="add_module"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
                               <button type="button" name="remove" class="btn btn-danger btn-sm remove-div remove_elm" style="display:none;" ><i class="fa fa-minus-circle"></i></button>
                               </td>
                           </tr>
-                          @endfor
                         </table>
                     </div>
 

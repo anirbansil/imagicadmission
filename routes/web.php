@@ -20,8 +20,6 @@ use App\Http\Controllers\CourseMasterController;
 
 use App\Http\Controllers\InquiryFormController;
 
-use App\Http\Controllers\QuickInquiryFormController;
-
 use App\Http\Controllers\RegistrationFormController;
 
 use App\Http\Controllers\ApplicationFormController;
@@ -35,6 +33,8 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\CenterMasterController;
 
 use App\Http\Controllers\TutorialVideoController;
+
+use App\Http\Controllers\StudentProfileController;
 
 
 
@@ -91,7 +91,7 @@ Route::post('/registration/verification' ,[RegistrationFormController::class,'Ot
 Route::get('/registration/otp_verification/{vefication_token}' ,[RegistrationFormController::class,'RegistrationVerification'])->name('registration.verification');
 
 
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => ['auth', 'student.restrict']], function () {
 
 
 
@@ -187,21 +187,6 @@ Route::group(['middleware' => 'auth'], function () {
 
 	Route::delete('/center-master/{id}', [CenterMasterController::class, 'destroy'])->name('center-master.delete');
 
-	// Seat Booking
-
-	Route::get('/seat', [SeatBookingController::class, 'index'])->name('seat.index');
-
-	Route::get('/seat/creates', [SeatBookingController::class, 'create'])->name('seat.create');
-
-	Route::post('/seat', [SeatBookingController::class, 'store'])->name('seat.store');
-
-	Route::get('/seat/{id}', [SeatBookingController::class, 'edit'])->name('seat.edit');
-
-	Route::post('/seat/{id}', [SeatBookingController::class, 'update'])->name('seat.update');
-
-	Route::delete('/seat/{id}', [SeatBookingController::class, 'destroy'])->name('seat.delete');
-
-	Route::get('/seat-export', [SeatBookingController::class, 'seatExport'])->name('seat-export');
 
 
 	// Inquiry Form
@@ -258,8 +243,10 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::post('/update-receipt/{id}', [ApplicationReceiptController::class, 'update'])->name('application-receipt.update');
 	Route::post('/admin-update-receipt/{id}', [ApplicationReceiptController::class, 'adminUpdate'])->name('application-receipt.adminupdate');
 	Route::delete('/application-receipt/{id}', [ApplicationReceiptController::class, 'destroy'])->name('application-receipt.delete');
-	
+
 	Route::get('/extra-amount-add/{id}', [ApplicationReceiptController::class, 'extraAmountUpdate']);
+
+	Route::get('/pending-export', [ApplicationReceiptController::class, 'pendingExport'])->name('pending-export');
 
 	// Reports
 	Route::get('/dcr', [ReportsController::class, 'dcr'])->name('reports.dcr');
@@ -330,25 +317,10 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::delete('/student_marks_distribution/delete/{id}', [StudentsController::class, 'StudentDestory'])->name('student.progress.delete');
 	Route::get('/student_marks_distribution/edit/{id}', [StudentsController::class, 'EditStudentMarks'])->name('student.mark.edit');
 	Route::put('/student_marks_distribution/{id}', [StudentsController::class, 'UpdateStudentMarks'])->name('student.marks.update');
-	//make student Login 
-    // Route::get('/student-login/', [DashboardController::class, 'studentlogin'])->name('student-login');
+	//make student Login
+// 	Route::get('/student-login/', [DashboardController::class, 'studentlogin'])->name('student-login');
 
-	// Invoice 
-	Route::get('/invoice', [ReportsController::class, 'invoice'])->name('invoice');
-	Route::post('/invoice-data', [ReportsController::class, 'invoiceDownload'])->name('invoice.download');
+	// Student Profile (Student role only, see RestrictStudentAccess middleware)
+	Route::get('/my-profile', [StudentProfileController::class, 'index'])->name('student.profile');
 
-	// Inquiry Form
-
-	Route::get('/quick-inquiry-form', [QuickInquiryFormController::class, 'index'])->name('quick-inquiry-form.index');
-
-	Route::get('/quick-inquiry-form/creates', [QuickInquiryFormController::class, 'create'])->name('quick-inquiry-form.create');
-
-	Route::post('/quick-inquiry-form', [QuickInquiryFormController::class, 'store'])->name('quick-inquiry-form.store');
-
-	Route::get('/quick-inquiry-form/{id}', [QuickInquiryFormController::class, 'edit'])->name('quick-inquiry-form.edit');
-
-	Route::post('/quick-inquiry-form/{id}', [QuickInquiryFormController::class, 'update'])->name('quick-inquiry-form.update');
-
-	Route::delete('/quick-inquiry-form/{id}', [QuickInquiryFormController::class, 'destroy'])->name('quick-inquiry-form.delete');
-	
 });

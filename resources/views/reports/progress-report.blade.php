@@ -57,12 +57,12 @@
                     @forelse($studentsMarks as $stdm)
                     <tr>
                         <td>{{$a}}</td>
-                        <td>{{$stdm->student->regDetails->first_name}} &nbsp; {{$stdm->student->regDetails->mid_name}} &nbsp; {{$stdm->student->regDetails->last_name}}</td>
-                        <td>{{$stdm->courseName->name}}</td>
+                        <td>{{optional(optional($stdm->student)->regDetails)->first_name}} &nbsp; {{optional(optional($stdm->student)->regDetails)->mid_name}} &nbsp; {{optional(optional($stdm->student)->regDetails)->last_name}}</td>
+                        <td>{{optional($stdm->courseName)->name}}</td>
                         <td>
                         <table>
                             @php
-                            $modules = explode(',',$stdm->courseName->module)
+                            $modules = explode(",",optional($stdm->courseName)->module)
                             @endphp
                                 <tr>
                                     @foreach($modules as $module)

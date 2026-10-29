@@ -20,7 +20,6 @@ use Session;
 use Validator;
 use Carbon\Carbon;
 use DB;
-use PDF;
 
 class ReportsController extends Controller {
 
@@ -47,7 +46,7 @@ class ReportsController extends Controller {
 		$applications = ApplicationForm::where(function ($q) use ($request) {
 							if(Auth::guard()->user()->is_admin != 1){
 				            	$q->whereHas('regDetails', function ($qu) use ($request) {
-				                    // $qu->where('center_name',Auth::guard()->user()->branch_id);
+				                    //$qu->where('center_name',Auth::guard()->user()->branch_id);
 				    				$qu->where('created_by', Auth::guard()->id());
 				                });
 				                
@@ -86,7 +85,9 @@ class ReportsController extends Controller {
 							->orderBy('id', 'desc')
 							->get();
 
-		return view('reports.dcr', compact('title', 'applications','applications_emi','centerDetails','request'));
+      	$roleArray = Auth::guard()->user()->roles()->pluck('slug')->toArray();
+      
+		return view('reports.dcr', compact('title', 'applications','applications_emi','centerDetails','request', 'roleArray'));
 
 	}
 
@@ -198,7 +199,7 @@ class ReportsController extends Controller {
 
 				        	if(Auth::guard()->user()->is_admin != 1){
 				            	$q->whereHas('regDetails', function ($qu) use ($request) {
-				                    // $qu->where('center_name',Auth::guard()->user()->branch_id);
+				                    //$qu->where('center_name',Auth::guard()->user()->branch_id);
 				    				$qu->where('created_by', Auth::guard()->id());
 				                });
 				                
@@ -217,9 +218,9 @@ class ReportsController extends Controller {
 									$dateto = Carbon::parse($request->to_date)
 							                 ->endOfDay()
 							                 ->toDateTimeString();
-					        		$q->whereBetween('updated_at',[$datef, $dateto]);
+					        		$q->whereBetween('update_date',[$datef, $dateto]);
 					    		}else{
-					    			$q->whereMonth('updated_at', Carbon::now()->month);
+					    			$q->whereMonth('update_date', Carbon::now()->month);
 					    		}
 
 					    		if (!empty($request->input('search')))
@@ -253,7 +254,8 @@ class ReportsController extends Controller {
 					        	if(Auth::guard()->user()->is_admin != 1){
 					            	$q->whereHas('application', function ($qu) use ($request) {
 					            		$qu->whereHas('regDetails', function ($qur) use ($request) {
-					            			$qur->where('center_name',Auth::guard()->user()->branch_id);
+					            			//$qur->where('center_name',Auth::guard()->user()->branch_id);
+				    						$qur->where('created_by', Auth::guard()->id());
 					            		});
 					                    
 					                });
@@ -269,7 +271,9 @@ class ReportsController extends Controller {
 							->get();
 							
 		// dd($applications_emi);
-		return view('reports.mcr', compact('title', 'applications','applications_emi','request','centerDetails'));
+      	$roleArray = Auth::guard()->user()->roles()->pluck('slug')->toArray();
+      
+		return view('reports.mcr', compact('title', 'applications','applications_emi','request','centerDetails', 'roleArray'));
 
 	}
 
@@ -340,9 +344,9 @@ class ReportsController extends Controller {
 									$dateto = Carbon::parse($request->to_date)
 							                 ->endOfDay()
 							                 ->toDateTimeString();
-					        		$q->whereBetween('updated_at',[$datef, $dateto]);
+					        		$q->whereBetween('update_date',[$datef, $dateto]);
 					    		}else{
-					    			$q->whereMonth('updated_at', Carbon::now()->month);
+					    			$q->whereMonth('update_date', Carbon::now()->month);
 					    		}
 
 					    		if (!empty($request->input('search')))
@@ -396,7 +400,7 @@ class ReportsController extends Controller {
 			'applications' => $applications,
 			'applications_emi' => $applications_emi
 		];
-		dd($request->all());
+		//dd($request->all());
 		return Excel::download(new McrReportsExport($data), 'mcr-reports.xlsx');
 
 	}
@@ -416,8 +420,7 @@ class ReportsController extends Controller {
 		$applications = ApplicationForm::where(function ($q) use ($request) {
 								if(Auth::guard()->user()->is_admin != 1){
 					            	$q->whereHas('regDetails', function ($qu) use ($request) {
-					                    // $qu->where('center_name',Auth::guard()->user()->branch_id);
-				    					$qu->where('created_by', Auth::guard()->id());
+					                    $qu->where('center_name',Auth::guard()->user()->branch_id);
 					                });
 					            }
 					            if ($request->has('search_by_center') && !empty($request->search_by_center) ){
@@ -427,7 +430,9 @@ class ReportsController extends Controller {
 					            }				                
 				            })->whereDate('created_at', Carbon::today())->orderBy('id', 'desc')->get();
 
-		return view('reports.dsr', compact('title', 'applications','centerDetails','request'));
+      	$roleArray = Auth::guard()->user()->roles()->pluck('slug')->toArray();
+      
+		return view('reports.dsr', compact('title', 'applications','centerDetails','request', 'roleArray'));
 
 	}
 
@@ -511,7 +516,7 @@ class ReportsController extends Controller {
 
 				        	if(Auth::guard()->user()->is_admin != 1){
 				            	$q->whereHas('regDetails', function ($qu) use ($request) {
-				                    // $qu->where('center_name',Auth::guard()->user()->branch_id);
+				                    //$qu->where('center_name',Auth::guard()->user()->branch_id);
 				    				$qu->where('created_by', Auth::guard()->id());
 				                });
 				                
@@ -520,8 +525,9 @@ class ReportsController extends Controller {
 						->orderBy('id', 'desc')
 						->get();
 		
+      	$roleArray = Auth::guard()->user()->roles()->pluck('slug')->toArray();
 
-		return view('reports.msr', compact('title', 'applications','request','centerDetails'));
+		return view('reports.msr', compact('title', 'applications','request','centerDetails', 'roleArray'));
 
 	}
 
@@ -587,21 +593,6 @@ class ReportsController extends Controller {
 		];
 		
 		return Excel::download(new MsrReportsExport($data), 'msr-reports.xlsx');
-
-	}
-
-	public function invoice(Request $request){
-
-		$title = "Invoice";
-		return view('invoice.create', compact('title', 'request'));
-	}
-
-	public function invoiceDownload(Request $request){
-
-		$data = $request->all();
-	    
-		$pdf = PDF::loadView('pdf.invoice', $data);
-        return $pdf->stream('invoice.pdf');
 
 	}
 

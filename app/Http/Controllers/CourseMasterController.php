@@ -103,6 +103,7 @@ class CourseMasterController extends Controller {
 				'name' => $request->name,
 				'duration' => $request->duration,
 				'fees' => $request->fees,
+				'min_admission_fee' => $request->min_admission_fee,
 				'number_of_emi' => $request->number_of_emi,
 				'gst' => $request->gst,
 				'status' => $request->status,
@@ -116,7 +117,6 @@ class CourseMasterController extends Controller {
 					'date'=>$request->module_date[$i],
 				]);
 			}
-			//dd($course_insert);
 			Session::flash('msg', 'Course sucessfully created');
 			return redirect()->route('course-master.index');
 		} catch (\Exception $e) {
@@ -169,8 +169,6 @@ class CourseMasterController extends Controller {
 
 
 	public function update(Request $request, $id) {
-		//echo $id;die;
-		// dd($request->number_of_emi);
 		$message = [
 			'name.required' => 'The category name field is required.',
 			'duration.required' => 'The category duration field is required.',
@@ -184,8 +182,6 @@ class CourseMasterController extends Controller {
 			'duration' => 'required',
 			'fees' => 'required',
 			'gst' => 'required',
-			// 'number_of_emi' => 'gt:12'
-
 		], $message);
 
 		if ($validator->fails()) {
@@ -201,14 +197,40 @@ class CourseMasterController extends Controller {
 				'name' => $request->name,
 				'duration' => $request->duration,
 				'fees' => $request->fees,
+				'min_admission_fee' => $request->min_admission_fee,
 				'number_of_emi' => $request->number_of_emi,
 				'gst' => $request->gst,
 				'status' => $request->status,
 				'module' => $request->module,
 				'updated_by' => Auth::guard()->user()->id
 			]);
+			$GetOldModules = CourseModule::where('course_id',$id)->pluck('id')->toArray();
+			if($request->has('old_module')){
+				foreach ($request->old_module as $key => $value) {
+					CourseModule::where('id',$key)->update([
+						'module_name'=>$request->old_module[$key],
+						'date'=>$request->old_module_date[$key],
+					]);
+					$GetOldModules = array_filter($GetOldModules, function($value) use ($key) {
+						return $value !== $key;
+					});
+					$GetOldModules = array_values($GetOldModules);
+				}
+				if(count($GetOldModules) > 0){
+					CourseModule::whereIn('id',$GetOldModules)->delete();
+				}
+			}
+			if($request->has('module')){
+				for($i=0; $i < count($request->module);  $i++){
+					CourseModule::create([
+						'course_id'=>$id,
+						'module_name'=>$request->module[$i],
+						'date'=>$request->module_date[$i],
+					]);
+				}
+			}
 			\DB::commit();
-			Session::flash('msg', 'Course updated sucessfully');
+			Session::flash('msg', 'Course updated successfully');
 			return redirect()->route('course-master.index');
 		} catch (\Exception $e) {
 			\Db::rollback();

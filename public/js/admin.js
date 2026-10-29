@@ -824,10 +824,17 @@ $('.rating_btn').click( function(){
 
     });
     
-        $('input[name="student_marks[]"], input[name="student_marksp[]"]').keyup(function(){
+     $(document).on('keyup' ,'input[name="student_marks[]"], input[name="student_marksp[]"]' ,function(){
+        // $('input[name="student_marks[]"], input[name="student_marksp[]"]').keyup(function(){
         var $row = $(this).closest('tr'); // Get the parent row
         var marks = parseFloat($row.find('input[name="student_marks[]"]').val()) || 0; // Get value of marks input or default to 0 if empty or NaN
         var marksp = parseFloat($row.find('input[name="student_marksp[]"]').val()) || 0; // Get value of marksp input or default to 0 if empty or NaN
+        if(marksp > 100 || marks > 100){
+            alert('Please enter a valid marks')
+            $(this).val('');
+            $row.find('input[name="student_markstotal[]"]').val('');
+            return false
+        }
         var total = marks + marksp; // Calculate total
         // Set the total value in student_markstotal field
         $row.find('input[name="student_markstotal[]"]').val(total);

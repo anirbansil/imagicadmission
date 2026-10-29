@@ -29,11 +29,12 @@
           @endif
           <div class="dashboard-materials">
             <div class="newform">
-              <div class="mainform cmnpadding ">
+              <div class="mainform cmnpadding ModuleMarkstable">
                  <form role="form" action="{{ route('student.marks.update',['id'=>$data->id]) }}" method="POST" enctype="multipart/form-data">
                  <input type="hidden" name="baseurl" id="baseurl" value="{{  url('')}}">
                  @csrf
                  @method('put')
+                 <div class="table-responsive ">
                  <table class="table table-bordered" id="item_table">
                               <tr>
                               <th>Course Name</th>
@@ -67,23 +68,24 @@
                                   </select>
                                  </td> --}}
                                  <td>
-                                  <select name="student[]" class="form-control student_name" id="student_name1" required>
+                                  <select name="student[]" class="form-control student_name" max="100" id="student_name1" required>
                                   @foreach($students as $student)
                                    <option value="{{$student->id}}"   @if($data->stdnt_id == $student->id) selected @endif>{{$student->regDetails->first_name}}&nbsp;{{$student->regDetails->last_name}}</option>
                                    @endforeach
                                   </select>
                                  </td>
                                  <td>
-                                    <input type="text" name="student_marks[]" id="student_marks" class="form-control" value="{{$data->marks}}" required>
+                                    <input type="text" name="student_marks[]" id="student_marks" max="100" class="form-control" value="{{$data->marks}}" required>
                                  </td>
                                  <td>
-                                   <input type="text" name="student_marksp[]" id="student_marks" class="form-control" value="{{$data->practical_marks}}" required>
+                                   <input type="text" name="student_marksp[]" id="student_marks" max="100" class="form-control" value="{{$data->practical_marks}}" required>
                                  </td>
                                  <td>
-                                      <input type="text" name="student_markstotal[]"  class="form-control disabled"  readonly>
+                                      <input type="text" name="student_markstotal[]"  class="form-control disabled" value="{{$data->total_marks}}"   readonly>
                                  </td>
                               </tr>
                            </table>
+                          </div>
                   <div class="form-group">
                     <input type="submit" value="Save" class="finalsubmit">
                   </div>

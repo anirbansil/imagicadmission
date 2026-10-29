@@ -4,6 +4,6 @@
     <h2 class="title">Imagic Admission System</h2>
     
     <ul class="tpright_list">
-      <li><a href="{{route('user-manage.user-profile')}}"><i class="fa fa-user" aria-hidden="true"></i></a></li>
+      <li><a href="{{App\Helpers\Helper::isStudent() ? route('student.profile') : route('user-manage.user-profile')}}"><i class="fa fa-user" aria-hidden="true"></i></a></li>
     </ul>
 </div>

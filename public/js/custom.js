@@ -11,6 +11,26 @@
 
 
  $(document).ready(function() {
+     
+    // $(function(){
+        var dtToday = new Date();
+        
+        var month = dtToday.getMonth() + 1;
+        var day = dtToday.getDate();
+        var year = dtToday.getFullYear();
+        if(month < 10)
+            month = '0' + month.toString();
+        if(day < 10)
+            day = '0' + day.toString();
+        
+        var maxDate = year + '-' + month + '-' + day;
+    
+        // or instead:
+        // var maxDate = dtToday.toISOString().substr(0, 10);
+    
+        //alert(maxDate);
+        $('#emi_date').attr('min', maxDate);
+    // });
 
   $('.add_module').click(function(){
     console.log('ok')
@@ -23,11 +43,12 @@
     $("#module_section").append(moduleclone);
     console.log(moduleclone)
   });
-  
+
   $('#extra_amount_add').change(function(){
+      
       var extra_amount_add = $(this).val();
       var emiid = $('#emiid').val();
-      
+      console.log(extra_amount_add+'--'+emiid);
       $.ajax({
 
         type: 'GET',
@@ -104,6 +125,8 @@
     var course_fee = $('input[name=course_fee]').val();
 
     var pay_on_admission = $('input[name=pay_on_admission]').val();
+
+    var min_admission_fee = $('input[name=min_admission_fee]').val();
 
     var batch_end_date = $('input[name=batch_end_date]').val();
 
@@ -224,11 +247,25 @@
 
         return false;
 
+    }else if(pay_on_admission < min_admission_fee){
+      $("input[name=pay_on_admission]").css({"border" : "1px solid #f00"});
+      $("input[name=pay_on_admission]").focus();
+      $('.admission_fee_error').html('Please add amount greater then '+min_admission_fee);
+      return false;
     }else{
-
+        $('.admission_fee_error').html('');
         $("input[name=pay_on_admission]").css({"border": "1px solid #d2cccc"});
 
     }
+
+    // if(pay_on_admission < min_admission_fee){
+    //   $("input[name=pay_on_admission]").css({"border" : "1px solid #f00"});
+    //   $("input[name=pay_on_admission]").focus();
+    //   $('.admission_fee_error').html('Please add amount greater then '+min_admission_fee);
+    //   return false;
+    // }else{
+    //   $('.admission_fee_error').html('');
+    // }
 
     if (balance == "" ) {
 
@@ -430,7 +467,7 @@
 
           $('#number_of_emi').val(response.course.number_of_emi);
 
-
+          $('#min_admission_fee').val(response.course.min_admission_fee);
 
           if(response.course.number_of_emi > 0){
 
@@ -442,7 +479,7 @@
 
               for (let i = 1; i <= response.course.number_of_emi; i++) {
 
-                $('.five_column_append').append('<div class="five_column"><div class="form-group"><input type="text" name="sl_no[]" id="sl_no" class="form-control required_field sl_no" value="'+i+'"></div><div class="form-group"><input type="date" name="emi_dates[]" id="emi_dates'+i+'" class="form-control required_field emi_dates" value="" readonly></div><div class="form-group"><select name="emi_payment_type" class="form-control required_field"><option value="">Select</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option></select></div><div class="form-group"><input type="text" name="cheque_no[]" id="cheque_no" class="form-control required_field cheque_no" value=""></div><div class="form-group"><input type="text" name="emi_amounts[]" id="emi_amounts'+i+'" class="form-control required_field emi_amounts" value=""></div></div>');
+                $('.five_column_append').append('<div class="five_column"><div class="form-group"><input type="text" name="sl_no[]" id="sl_no" class="form-control required_field sl_no" value="'+i+'"></div><div class="form-group"><input type="date" name="emi_dates[]" id="emi_dates'+i+'" class="form-control required_field emi_dates" value="" readonly></div><div class="form-group"><select name="emi_payment_type" class="form-control required_field"><option value="">Select</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option></select></div><div class="form-group"><input type="text" name="cheque_no[]" id="cheque_no" class="form-control required_field cheque_no" value=""></div><div class="form-group"><input type="text" name="emi_amounts[]" id="emi_amounts'+i+'" class="form-control required_field emi_amounts" value="" readonly></div></div>');
 
               }
 
@@ -590,7 +627,7 @@
 
     var admission_fee = $('#admission_fee').val();
 
-
+    var min_admission_fee = $('#min_admission_fee').val();
 
     var is_gst = $('#is_gst').val();
 
@@ -636,7 +673,14 @@
 
     $('#balance').val(balance);
 
-
+    if(pay_on_admission < min_admission_fee){
+      $("input[name=pay_on_admission]").css({"border" : "1px solid #f00"});
+      $("input[name=pay_on_admission]").focus();
+      $('.admission_fee_error').html('Please add amount greater then '+min_admission_fee);
+      return false;
+    }else{
+      $('.admission_fee_error').html('');
+    }
 
   });
 
@@ -1141,7 +1185,21 @@
       }
 
   });
+$(document).on('click', '#add_module', function(){
+    var source = $('.append-dive:first')
+    var i =  $('.append-dive:last').attr('data-id');
+    var d = i++;
+    var source = $('.append-dive:last'),
+    clone = source.clone();
+    clone.find(':input').val('');
+    clone.find('.add').remove();
+    clone.find('.remove-div').show();
+    clone.find('#module_'+d).attr('id','module_'+i).attr('name','module[]');
+    clone.find('#module_date_'+d).attr('id','module_date_'+i).attr('name','module_date[]');
+    $("table tbody").append(clone);
+    $('.append-dive:last').attr('data-id',i)
 
+  })
   $(document).on('click', '#add_new', function(){
 
     var source = $('.append-dive:first')
@@ -1166,7 +1224,7 @@
     clone.find('select[name="module_name[]"]').attr('data-target',i);
 
     clone.find('select[name="sub_module_name[]"]').attr('id','sub_module_name'+i);
-    clone.find('select[name="student_name[]"]').attr('id','student_name'+i);
+    clone.find('select[name="student[]"]').attr('id','student_name'+i);
 
     clone.find('.add').remove();
 

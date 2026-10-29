@@ -77,11 +77,14 @@
               
              </form>
           </div>
+          
+          @if(!in_array('counselor', $roleArray))
           @if(!$applications->isEmpty() || !$applications_emi->isEmpty() )
           <div class="add-new-strc">
             <a class="add-new-strc-btn" href="{{route('mcr-export',['from_date'=>$request->from_date, 'to_date'=>$request->to_date, 'search'=>$request->search, 'search_by_center'=>$request->search_by_center])}}">Export to Excel</a>
           </div>
           @endif
+		@endif
 
           <div class="relg-list">
             <div class="table-responsive">

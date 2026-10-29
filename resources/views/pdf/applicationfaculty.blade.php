@@ -223,11 +223,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $sl_no = 1; $modules = explode(',',$course_details->module) @endphp
-                    	@foreach($modules as $module)
+                        @php $sl_no = 1; 
+                        //$modules = $category->courseModule; 
+                        @endphp
+                    	@forelse($course_details->courseModule as $module)
                         <tr>
                             <td>{{$sl_no}}</td>
-                            <td>{{$module}}</td>
+                            <td>{{$module->module_name}}</td>
                             <td></td>
                             <td></td>
                             <td style="padding: 0">
@@ -240,7 +242,8 @@
                             </td>
                         </tr>
                         @php $sl_no++; @endphp
-                        @endforeach
+                        @empty
+                        @endforelse
                     </tbody>
                 </table>
             </div>

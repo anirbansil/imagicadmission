@@ -147,7 +147,7 @@
                         </tr>
                         <tr>
                             <td>E-Mail Id </td>
-                            <td>{{ substr($registrations->email, 0, 3) . '**********@' . explode('@', $registrations->email)[1] }}</td>
+                            <td>{{ substr($registrations->email, 0, 4) . '**********@' . explode('@', $registrations->email)[1] }}</td>
                         </tr>
                         <tr>
                             <td>Student Address </td>

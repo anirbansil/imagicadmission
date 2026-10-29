@@ -164,7 +164,7 @@
 
                                     <div class="profress-dash-hldr">
 
-                                        <span class="img"><img src="{{$urljson['wp:featuredmedia']['0']->source_url}}"></span>
+                                        <span class="img"><img src="{{@$urljson['wp:featuredmedia']['0']->source_url}}"></span>
 
                                     </div>
 

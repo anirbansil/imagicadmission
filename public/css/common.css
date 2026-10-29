@@ -5004,6 +5004,11 @@ h2.note_heading::after {
   border: 2px solid #eca107;
   margin-bottom: 10px;
 }
+
+.ModuleMarkstable table {
+  width: 100%;
+  border-collapse: collapse;
+}
 /*End*/
 
 
@@ -5282,6 +5287,11 @@ h2.note_heading::after {
 
 }
 
+@media (max-width: 1023px) {
+  .ModuleMarkstable table {
+      width: 100%;
+  }
+}
 @media (max-width: 1023px){
 
 	.top_panel{ padding: 10px 20px; }
@@ -5826,6 +5836,69 @@ h4.title-h4{
 
 
 
+}
+@media (max-width: 767px) {
+  .ModuleMarkstable .table-repsonsive {
+      overflow: auto;
+      padding: 0 0 10px;
+  }
+  .ModuleMarkstable table {
+      width: 800px;
+      max-width: inherit;
+  }
+  .ModuleMarkstable td select {
+      padding: 2px;
+      padding: 0 10px;
+  }
+  .ModuleMarkstable th,
+  .ModuleMarkstable td {}
+  .ModuleMarkstable th {
+      display: none;
+  }
+  .ModuleMarkstable tr {
+      display: block;
+  }
+  .ModuleMarkstable td {
+      position: relative;
+      width: 100%;
+      display: block;
+      margin-top: 30px;
+      border: none !important;
+  }
+  .ModuleMarkstable td:before {
+      position: absolute;
+      content: "";
+      top: -30px;
+      height: 30px;
+      left: 0;
+      width: 100%;
+      background: #f5f5f5;
+      padding: 5px 10px;
+  }
+  .ModuleMarkstable td:first-child:before {
+      content: "Course Name";
+  }
+  .ModuleMarkstable td:nth-child(2):before {
+      content: "Module Name";
+  }
+  .ModuleMarkstable td:nth-child(3):before {
+      content: "Student Name";
+  }
+  .ModuleMarkstable td:nth-child(4):before {
+      content: "Theory Marks";
+  }
+  .ModuleMarkstable td:nth-child(5):before {
+      content: "Practical Marks";
+  }
+  .ModuleMarkstable td:nth-child(6):before {
+      content: "Total";
+  }
+  .ModuleMarkstable td:nth-child(7):before {
+      content: "Action";
+  }
+  .ModuleMarkstable table {
+      width: 100%;
+  }
 }
 
 @media (max-width:530px){

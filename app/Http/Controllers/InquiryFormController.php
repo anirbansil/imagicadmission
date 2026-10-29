@@ -111,7 +111,7 @@ class InquiryFormController extends Controller {
 
 		$title = 'Inquiry List';
 
-
+		DB::enableQueryLog();
 
         $inquires = InquiryForm::where(function ($q) use ($request) {
 
@@ -186,6 +186,7 @@ class InquiryFormController extends Controller {
                 $q->where('status', $request->status);
 
             }
+
             
             if (!empty($request->input('serial_no'))) {
                 
@@ -226,12 +227,22 @@ class InquiryFormController extends Controller {
             if(Auth::guard()->user()->is_admin != 1){
 				$q->where('created_by', Auth::guard()->id());
 			}
+          
+			/*$user = User::find(Auth::id());
 
+            if ($user->hasRole(['superadmin', 'admin'])) {
+              // Show all records
+            } elseif ($user->hasRole('center')) {
+              $q->where('center_name', $user->branch_id);
+            } elseif ($user->hasRole('counselor')) {
+              $q->where('center_name', $user->branch_id)
+                ->where('created_by', $user->id);
+            }*/
 
 
         })->orderBy('id', 'desc')->paginate(25)->appends(request()->query());
 
-
+        // dd(DB::getQueryLog());
 
         $centerDetails = CenterMaster::where(function($q) use ($request) {
 
@@ -496,7 +507,7 @@ class InquiryFormController extends Controller {
 
 
 
-			'mobile_no' => 'required',
+			'mobile_no' => 'required|unique:inquiry_form',
 
 
 
@@ -1464,7 +1475,7 @@ class InquiryFormController extends Controller {
 	public function InquiryExport(Request $request) {
 
 		$title = 'Inquiry Report';
-
+		
 		$inquires = InquiryForm::where(function ($q) use ($request) {
 
             if (!empty($request->input('from_date') && !empty($request->input('to_date')))) {

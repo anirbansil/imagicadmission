@@ -69,8 +69,140 @@ class ApplicationFormController extends Controller {
     public function index(Request $request) {
 
         $title = 'Application';
+      
+        $query = ApplicationForm::query();
 
-        $applications = ApplicationForm::where(function ($q) use ($request) {
+        $user = Auth::user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | ROLE BASE FILTER (YOUR WORKING LOGIC)
+        |--------------------------------------------------------------------------
+        */
+
+        // SUPER ADMIN (branch_id is NULL)
+        if (is_null($user->branch_id)) {
+
+            // no filter → show all data
+
+        } else {
+
+            // center filter
+            $query->whereHas('regDetails', function ($q) use ($user) {
+                $q->where('center_name', $user->branch_id);
+            });
+
+            // counselor restriction
+            if ($user->hasRole('counselor')) {
+                $query->where('created_by', $user->id);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATE FILTER
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+
+            $from = Carbon::parse($request->from_date)->startOfDay();
+            $to   = Carbon::parse($request->to_date)->endOfDay();
+
+            $query->whereBetween('created_at', [$from, $to]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | COURSE FILTER
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search_by_course')) {
+
+            $query->whereHas('regDetails', function ($q) use ($request) {
+                $q->where('course', $request->search_by_course);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CENTER FILTER (extra manual filter if used in search form)
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search_by_center')) {
+
+            $query->whereHas('regDetails', function ($q) use ($request) {
+                $q->where('center_name', $request->search_by_center);
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SEARCH FILTER (FIXED SAFE GROUPING)
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('input_search')) {
+
+            $search = $request->input_search;
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('application_id', 'LIKE', "%{$search}%")
+                  ->orWhere('reg_id', 'LIKE', "%{$search}%")
+                  ->orWhereHas('regDetails', function ($qu) use ($search) {
+
+                      $qu->where(DB::raw('CONCAT(first_name," ",mid_name," ",last_name)'), 'LIKE', "%{$search}%")
+                         ->orWhere(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$search}%")
+                         ->orWhere('first_name', 'LIKE', "%{$search}%")
+                         ->orWhere('mid_name', 'LIKE', "%{$search}%")
+                         ->orWhere('last_name', 'LIKE', "%{$search}%")
+                         ->orWhere('qualification', 'LIKE', "%{$search}%");
+                  });
+
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FINAL RESULT
+        |--------------------------------------------------------------------------
+        */
+
+        $applications = $query->orderByDesc('id')
+            ->paginate(25)
+            ->appends(request()->query());
+      
+      /*$query = ApplicationForm::query();
+
+      $user = Auth::user();
+
+      // SUPER ADMIN (branch_id is NULL)
+      if (is_null($user->branch_id)) {
+
+          // no filter → show all data
+
+      } else {
+
+          // normal users → filter by branch
+          $query->whereHas('regDetails', function ($q) use ($user) {
+              $q->where('center_name', $user->branch_id);
+          });
+
+          // counselor extra restriction
+          if ($user->hasRole('counselor')) {
+              $query->where('created_by', $user->id);
+          }
+      }
+
+      $applications = $query->orderByDesc('id')
+          ->paginate(25)
+          ->appends(request()->query());*/
+
+
+        /*$applications = ApplicationForm::where(function ($q) use ($request) {
 
             if (!empty($request->input('from_date') && !empty($request->input('to_date')))) {
                 $datef = Carbon::parse($request->from_date)
@@ -97,14 +229,14 @@ class ApplicationFormController extends Controller {
 
             if (!empty($request->input_search)) {
                 
-                $q->orWhere('application_id', 'LIKE', '%' . $request->input_search . '%');
+                $q->where('application_id', 'LIKE', '%' . $request->input_search . '%');
                 $q->orWhereHas('regDetails', function ($qu) use ($request) {
                     $qu->where(DB::raw('CONCAT(first_name," ",mid_name," ",last_name)'),'LIKE', '%' . $request->input_search .'%')
                     ->orWhere(DB::raw('CONCAT(first_name," ",last_name)'),'LIKE', '%' . $request->input_search .'%')
                     ->orWhere('first_name', 'LIKE', '%'.$request->input_search .'%')
                     ->orWhere('mid_name', 'LIKE', '%'.$request->input_search.'%')
                     ->orWhere('last_name', 'LIKE', '%' . $request->input_search . '%')
-                    ->orWhere('center_name', 'LIKE', '%' . $request->input_search . '%')
+                    // ->orWhere('center_name', 'LIKE', '%' . $request->input_search . '%')
                     ->orWhere('qualification', 'LIKE', '%' . $request->input_search . '%');
                 });
                 $q->orWhere('reg_id', 'LIKE', '%' .$request->input_search.'%');
@@ -112,12 +244,14 @@ class ApplicationFormController extends Controller {
             if(Auth::guard()->user()->is_admin != 1){
                 $q->whereHas('regDetails', function ($qu) use ($request) {
                     //$qu->where('center_name',Auth::guard()->user()->branch_id);
-				    $qu->where('created_by', Auth::guard()->id());
+					$qu->where('created_by', Auth::guard()->id());
                 });
                 
             }
-        })->orderBy('id', 'desc')->paginate(25)->appends(request()->except('page'));
+        })->orderBy('id', 'desc')->paginate(25)->appends(request()->except('page'));*/
+        // })->orderBy('id', 'desc')->toSql();
 
+        // dd($applications);
         $centerDetails = CenterMaster::where(function($q) use ($request) {
                             if(Auth::guard()->user()->is_admin != 1){
                                 $q->where('id',Auth::guard()->user()->branch_id);
@@ -388,6 +522,7 @@ class ApplicationFormController extends Controller {
                 ]);
 
 
+
                 $app_update = ApplicationForm::where('id', $app_id)
 
                               ->update(['application_id' => 'APP-'.$app_id]);
@@ -461,47 +596,47 @@ class ApplicationFormController extends Controller {
                 $s_txt = "Congratulation! IMAGIC welcomes you to the best career course. We confirm your admission in ".Helper::getCourseName($request->course).". Best wishes for your bright future! Your application no is : ".$request->application_id;
                 $s_headers = "From: info@pinealmagic.in";
 
-                //mail($s_to,$s_subject,$s_txt,$s_headers);
+                mail($s_to,$s_subject,$s_txt,$s_headers);
 
                 // SMS
-                // $url = "https://sms11.infonetservices.in/api/api_http.php";
-                // $your_phone = Helper::getRegDetails($request->reg_id)->mobile_no;
+                $url = "https://sms11.infonetservices.in/api/api_http.php";
+                $your_phone = Helper::getRegDetails($request->reg_id)->mobile_no;
                 
-                //   $param = array(
-                //       'username' => 'imagic',
-                //       'password' => 'imagic122',
-                //       'senderid' => 'iMAGIC',
-                //       'text' => 'Dear '.Helper::getRegDetails($request->reg_id)->mr_mrs.' '.Helper::getRegDetails($request->reg_id)->first_name.' '.Helper::getRegDetails($request->reg_id)->mid_name.' '.Helper::getRegDetails($request->reg_id)->last_name.', Congratulation! IMAGIC welcomes you to the best career course. We confirm your admission in '.Helper::getCourseName($request->course).'. Best wishes for your bright future!',
-                //       'route' => 'Informative',
-                //       'type' => 'text',
-                //       'datetime' => '2021-02-27 16:30:19',
-                //       'to' => $your_phone,
-                //   );
+                  $param = array(
+                      'username' => 'imagic',
+                      'password' => 'imagic122',
+                      'senderid' => 'iMAGIC',
+                      'text' => 'Dear '.Helper::getRegDetails($request->reg_id)->mr_mrs.' '.Helper::getRegDetails($request->reg_id)->first_name.' '.Helper::getRegDetails($request->reg_id)->mid_name.' '.Helper::getRegDetails($request->reg_id)->last_name.', Congratulation! IMAGIC welcomes you to the best career course. We confirm your admission in '.Helper::getCourseName($request->course).'. Best wishes for your bright future!',
+                      'route' => 'Informative',
+                      'type' => 'text',
+                      'datetime' => '2021-02-27 16:30:19',
+                      'to' => $your_phone,
+                  );
 
-                //   $post = http_build_query($param, '', '&');
+                  $post = http_build_query($param, '', '&');
 
-                //   $ch = curl_init();
+                  $ch = curl_init();
 
-                //   curl_setopt($ch, CURLOPT_URL, $url);
-                //   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                //   curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-                //   curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-                //   curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
+                  curl_setopt($ch, CURLOPT_URL, $url);
+                  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                  curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                  curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+                  curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
 
-                //   $result = curl_exec($ch);
+                  $result = curl_exec($ch);
 
-                //   if(curl_errno($ch)) {
-                //       $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
-                //   } else {
-                //       $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                //       switch($returnCode) {
-                //           case 200 :
-                //               break;
-                //           default :
-                //               $result = "HTTP ERROR: " . $returnCode;
-                //       }
-                //   }
-                //   curl_close($ch);
+                  if(curl_errno($ch)) {
+                      $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
+                  } else {
+                      $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                      switch($returnCode) {
+                          case 200 :
+                              break;
+                          default :
+                              $result = "HTTP ERROR: " . $returnCode;
+                      }
+                  }
+                  curl_close($ch);
 
 
 

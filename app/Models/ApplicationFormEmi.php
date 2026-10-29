@@ -19,7 +19,7 @@ class ApplicationFormEmi extends Model
      * @var array
      */
     protected $fillable = [
-        'application_id','emi_no','emi_dates','payment_type','cheque_no','emi_amounts','extra_amount','created_by','updated_by'
+        'application_id','emi_no','emi_dates','payment_type','cheque_no','emi_amounts','extra_amount','remarks','created_by','updated_by'
     ];
     
     public function application() { 

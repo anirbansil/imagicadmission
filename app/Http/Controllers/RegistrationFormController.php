@@ -52,7 +52,7 @@ class RegistrationFormController extends Controller
                 $q->orWhere('qualification', 'LIKE', '%' . $request->input('input_search') . '%');
             }
             if(Auth::guard()->user()->is_admin != 1){
-                // $q->where('center_name',Auth::guard()->user()->branch_id);
+                //$q->where('center_name',Auth::guard()->user()->branch_id);
 				$q->where('created_by', Auth::guard()->id());
             }
         })->orderBy('id', 'desc')->paginate(25)->appends(request()->except('page'));
@@ -114,8 +114,8 @@ class RegistrationFormController extends Controller
             'pin_code.required' => 'The field is required.',
             'date_of_birth.required' => 'The field is required.',
             'mobile_no.required' => 'The field is required.',
+            'mobile_no.unique' => 'Your mobile number already registered.',
             'email.required' => 'The field is required.',
-            'email.unique' => 'This email address is already registered.',
             'qualification.required' => 'The field is required.',
         ];
         $validator = Validator::make($request->all(), [
@@ -130,8 +130,8 @@ class RegistrationFormController extends Controller
             'district' => 'required',
             'pin_code' => 'required',
             'date_of_birth' => 'required',
-            'mobile_no' => 'required',
-            'email' => 'required|email|unique:registration_form,email|unique:users,email',
+            'mobile_no' => 'required|unique:registration_form',
+            'email' => 'required',
             'qualification' => 'required',
         ], $message);
         if ($validator->fails()) {
@@ -197,42 +197,42 @@ class RegistrationFormController extends Controller
                 $user_details = UserDetail::where('user_id',$exits_users->id)->update([
                     'first_name' => $request->first_name,
                     'last_name' => $request->last_name,
-                    'mobile' => $request->mobile_no,
+                    'mobile' => $request->phone_no,
                 ]);
                 $exits_users->roles()->attach($role->id);
             }
             else{
-                $user = User::create([
-                    'email' => $request->email,
-                    'phone_no' => $request->mobile_no,
-                    'user_name' => $user_name,
-                    'name' => $name,
-                    'password' => bcrypt($password),
-                    'is_admin' => 2,
-                    'status' => 1,
-                    'token' => ''
-                ]);
+                $user = User::create($request->only('email', 'phone_no') + [ 'user_name' => $user_name, 'name' => $name,'password' => bcrypt($password),'is_admin'=>2, 'status' => 1 ,'token'=>''],);
                 $user_details = UserDetail::insert(['user_id' => $user->id,
                     'first_name' => $request->first_name,
                     'last_name' => $request->last_name,
-                    'mobile' => $request->mobile_no,
+                    'mobile' => $request->phone_no,
                 ]);
                 $user->roles()->attach($role->id);
             }
-
-            // Single Combined Student Email
             $s_to = $request->email;
-            $s_subject = "Registration Completed & Login Details - IMAGIC";
-            $s_txt = "Dear ".$request->mr_mrs." ".$request->first_name." ".$request->mid_name." ".$request->last_name.",\n\n".
-                     "Congratulations! Welcome to IMAGIC Institute. We confirm your registration. Wishing you a colorful career.\n\n".
-                     "Your Registration No: REG-".$registration_id."\n".
-                     "Here are your login details:\n".
-                     "Email: ".$request->email."\n".
-                     "Password: ".$password."\n\n".
-                     "Regards,\nIMAGIC Institute";
+            $s_subject = "Imagic Login Details";
+            $s_txt = "Dear  ".$request->first_name." ".$request->last_name.", Congratulation! Welcome to IMAGIC Institute. Here is your login details : Email - ".$request->email." and Password - ".$password.",Regards Imagic";
             $s_headers = "From: info@pinealmagic.in";
-            mail($s_to, $s_subject, $s_txt, $s_headers);
+            mail($s_to,$s_subject,$s_txt,$s_headers);
             // End new user create
+
+            // Admin Email
+            $to = ['aamina.9k@gmail.com','aamina13khan@gmail.com'];
+          //  $to = "somnath@imagic.net.in,admission@imagic.net.in";
+            $subject = "Registration Form Data";
+            $txt = "Name : ".$request->mr_mrs." ".$request->first_name." ".$request->mid_name." ".$request->last_name."\n";
+            $txt .= "Phone Number : ".$request->mobile_no."\n";
+            $txt .= "Email : ".$request->email."\n";
+            $txt .= "Registration Id : REG-".$registration_id."\n";
+            $headers = "From: info@pinealmagic.in";
+            // mail($to,$subject,$txt,$headers);
+            // Student Email
+            $s_to = $request->email;
+            $s_subject = "Registration Completed";
+            $s_txt = "Dear ".$request->mr_mrs." ".$request->first_name." ".$request->mid_name." ".$request->last_name.", Congratulation! Welcome to IMAGIC Institute. We confirm your registration. Wishing you a colour full career. Your registration no is : REG-".$registration_id;
+            $s_headers = "From: info@pinealmagic.in";
+            mail($s_to,$s_subject,$s_txt,$s_headers);
             // SMS
             $url = "https://sms11.infonetservices.in/api/api_http.php";
             $your_phone = $request->mobile_no;

@@ -16,3 +16,7 @@ yarn-error.log
 /uploads
 /public/bower_components
 /public/images
+
+# Large local archives (images.tar.gz is over GitHub's 100MB limit)
+/public/images.tar.gz
+/public/public.zip

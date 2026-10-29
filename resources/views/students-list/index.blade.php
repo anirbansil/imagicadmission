@@ -59,11 +59,11 @@
 
                     <div class="col-xs-12 col-md-3 col-sm-6">
                         <div class="form-group">
-                            <select class="form-control" name="search_by_center">
+                            <select class="form-control" name="search_by_center" @if(Auth::guard()->user()->roles[0]->slug == 'faculty') disabled @endif>
                                 <option value="">select centre</option>
                                 @foreach ($centerDetails as $center)
                                     <option value="{{ $center->id }}"
-                                        @if (!empty($request->search_by_center) && $request->search_by_center == $center->id) selected @endif>
+                                        @if (!empty($request->search_by_center) && $request->search_by_center == $center->id) selected @elseif(Auth::guard()->user()->roles[0]->slug == 'faculty' && Auth::guard()->user()->branch_id == $center->id ) selected @endif>
                                         {{ $center->name }}</option>
                                 @endforeach
                             </select>
@@ -72,11 +72,16 @@
 
                     <div class="col-xs-12 col-md-3 col-sm-6">
                         <div class="form-group">
-                          <select class="form-control" name="search_by_faculty">
-                            <option value="">select Faculty</option>
-                            @foreach ($faculties as $faculti)
-                            <option value="{{ $faculti->id }}" @if (!empty($request->search_by_faculty) && $request->search_by_faculty == $faculti->id) selected @endif>{{ $faculti->name }}</option>
-                            @endforeach
+                          <select class="form-control" name="search_by_faculty" @if(Auth::guard()->user()->roles[0]->slug == 'faculty') disabled @endif>
+                            @if(Auth::guard()->user()->roles[0]->slug == 'faculty')
+                              <option value="{{$logged_in_faculty->id}}">{{@$logged_in_faculty->surname}}&nbsp;{{@$logged_in_faculty->name}}</option>
+                            @else
+                              <option value="">select Faculty</option>
+                              @foreach ($faculties as $faculti)
+                              <option value="{{ $faculti->id }}" @if (!empty($request->search_by_faculty) && $request->search_by_faculty == $faculti->id) selected @endif>{{ $faculti->name }}</option>
+                              @endforeach
+                            @endif
+                           
                           </select>
                         </div>
                     </div>

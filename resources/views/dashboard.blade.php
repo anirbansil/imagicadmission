@@ -127,7 +127,7 @@
                             
                         @endphp
                         
-                        @if(Auth::guard()->user()->is_admin == 1 || $roleArray[0]== "center")
+                        @if(Auth::guard()->user()->is_admin == 1 || in_array($roleArray[0], ['center', 'counselor']))
                         <br>
                         <div class="col-lg-3 col-md-6 col-sm-6 col-6">
 

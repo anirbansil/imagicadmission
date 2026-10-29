@@ -32,7 +32,21 @@
                   <form action="{{route('student.marks.index')}}" method="get">
                     <div class="filter_row">
                       <div class="filter_div row">
-                      <div class="col-xs-12 col-md-3 col-sm-6">
+                          <div class="col-xs-12 col-md-3 col-sm-6">
+                              <div class="form-group">
+                                  <select class="form-control" name="search_by_center">
+                                      @if(Auth::guard()->user()->is_admin == 1)
+                                      <option value="">select centre</option>
+                                      @endif  
+                                      @foreach ($centerDetails as $center)
+                                          <option value="{{ $center->id }}"
+                                              @if (!empty($request->search_by_center) && $request->search_by_center == $center->id) selected @endif>
+                                              {{ $center->name }}</option>
+                                      @endforeach
+                                  </select>
+                              </div>
+                          </div>
+                          <div class="col-xs-12 col-md-3 col-sm-6">
                             <div class="form-group">
                                 <select name="course_name" class="form-control course_name" data-target="1"  id="course_name1" required><option value="">Select Course</option>
                                     @foreach($courses as $course)
@@ -107,14 +121,14 @@
                     @forelse($marks_list as $marks)
                 <tr>
                     <td>{{$a}}</td>
-                    <td>{{$marks->student->regDetails->first_name}} &nbsp; {{$marks->student->regDetails->mid_name}} &nbsp; {{$marks->student->regDetails->last_name}}</td>
-                    <td>{{$marks->courseName->name}}</td>
+                    <td>{{optional(optional($marks->student)->regDetails)->first_name}} &nbsp; {{optional(optional($marks->student)->regDetails)->mid_name}} &nbsp; {{optional(optional($marks->student)->regDetails)->last_name}}</td>
+                    <td>{{optional($marks->courseName)->name}}</td>
                     <td>{{$marks->module_name}}</td>
                     {{-- <td>{{$marks->sub_module_name}}</td> --}}
                     <td>{{$marks->marks}}</td>
                     <td>{{$marks->practical_marks}}</td>
                     <td>{{$marks->total_marks}}</td>
-                    <td>{{$marks->user->name}}</td>
+                    <td>{{optional($marks->user)->name}}</td>
                     <td> @if(Auth::guard()->user()->is_admin == 1) 
                       <a class="edit" href="{{route('student.mark.edit', $marks->id)}}"><img src="{{asset('public/images/draw.png')}}"></a>
                       
@@ -166,7 +180,7 @@
         // Populate data from the variable passed by the controller
 
         @foreach($marks_list as $item)
-                data.addRow(['{{ $item->module_name }}',{{ $item->marks }}]);            
+                data.addRow(['{{ $item->module_name }}',{{ $item->total_marks }}]);            
         @endforeach
 
         var options = {

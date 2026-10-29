@@ -61,11 +61,13 @@
           </div>
           @endif
 
+          @if(!in_array('counselor', $roleArray))
           @if(!$applications->isEmpty() || !$applications_emi->isEmpty())
             <div class="add-new-strc">
               <a class="add-new-strc-btn" href="{{route('dcr-export',['search_by_center'=>$request->search_by_center])}}">Export to Excel</a>
             </div>
           @endif
+		@endif
 
           <div class="relg-list">
             <div class="table-responsive">
@@ -89,7 +91,6 @@
                   <th>Amount</th>
                   <th>GST</th>                  
                 </tr>
-                
                 @php $app_total = 0; $total_pay_on_admission_gst = 0; $sl_no=1; @endphp
                   @forelse($applications as $application)
                   <tr> 

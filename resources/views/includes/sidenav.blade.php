@@ -16,13 +16,19 @@
 
    <ul class="side-list">
 
+    @if(App\Helpers\Helper::isStudent())
+
+     <li class="{{ Request::is('my-profile') ? 'active' : '' }}"><a href="{{route('student.profile')}}" class="user" title="My Profile">My Profile</a></li>
+
+     <li><a href="{{route('logout')}}" class="logout" title="Logout">Logout</a></li>
+
+    @else
+
     @if(App\Helpers\Helper::sidenavAccess('dashboard'))
 
      <li class="{{ Request::is('dashboard') ? 'active' : '' }}"><a href="{{route('dashboard')}}" class="home" title="Dashboard">Dashboard</a></li>
 
      @endif
-
-     <li class="{{ Request::is('quick-inquiry-form') ? 'active' : '' }}"><a href="{{route('quick-inquiry-form.index')}}" class="attendance" title="Attendance List">Quick Inquiry</a></li>
 
      @if(App\Helpers\Helper::sidenavAccess('attendance'))
 
@@ -118,13 +124,13 @@
 
       <ul class="submenu">
 
-        <li><a href="{{route('application-receipt.all')}}" class="receipt" title="All Receipt">All Receipt</a></li>
+        <li><a href="{{route('application-receipt.all')}}" class="receipt" title="All Receipt" style="color: black;">All Receipt</a></li>
 
         @if(empty($user_app_id))
 
-        <li><a href="{{route('application-receipt.index')}}" class="receipt" title="Pending Receipt">Pending Receipt</a></li>
+        <li><a href="{{route('application-receipt.index')}}" class="receipt" title="Pending Receipt" style="color: black;">Pending Receipt</a></li>
 
-        <li><a href="{{route('application-receipt.cleared')}}" class="receipt" title="Clear Receipt">Cleared Receipt</a></li>
+        <li><a href="{{route('application-receipt.cleared')}}" class="receipt" title="Clear Receipt" style="color: black;">Cleared Receipt</a></li>
 
         @endif
 
@@ -140,13 +146,13 @@
 
       <ul class="submenu">
 
-        <li><a href="{{route('reports.dcr')}}" class="reprt" title="DCR">DCR</a></li>
+        <li><a href="{{route('reports.dcr')}}" class="reprt" title="DCR" style="color: black;">DCR</a></li>
 
-        <li><a href="{{route('reports.mcr')}}" class="reprt" title="MCR">MCR</a></li>
+        <li><a href="{{route('reports.mcr')}}" class="reprt" title="MCR" style="color: black;">MCR</a></li>
 
-        <li><a href="{{route('reports.dsr')}}" class="reprt" title="DSR">DSR</a></li>
+        <li><a href="{{route('reports.dsr')}}" class="reprt" title="DSR" style="color: black;">DSR</a></li>
 
-        <li><a href="{{route('reports.msr')}}" class="reprt" title="MSR">MSR</a></li>
+        <li><a href="{{route('reports.msr')}}" class="reprt" title="MSR" style="color: black;">MSR</a></li>
 
        {{-- <li><a href="{{route('student.progress.report')}}" class="reprt" title="MSR">Progress Report</a></li> --}}
 
@@ -156,7 +162,7 @@
 
      @endif
 
-     <li class="{{ Request::is('invoice') || Request::is('invoice/*') ? 'active' : '' }}"><a href="{{route('invoice')}}" class="tutorial" title="Invoice">Invoice</a></li>
+
 
      @if(App\Helpers\Helper::sidenavAccess('students-list'))
 
@@ -164,9 +170,9 @@
 
      <ul class="submenu">
 
-          <li><a href="{{route('students-list.index')}}" class="student" title="Students List">Student's List</a></li>
+          <li><a href="{{route('students-list.index')}}" class="student" title="Students List" style="color: black;">Student's List</a></li>
 
-          <li><a href="{{route('outsider_students')}}" class="student" title="Outsider Student">Outsider Student</a></li>
+          <li><a href="{{route('outsider_students')}}" class="student" title="Outsider Student" style="color: black;">Outsider Student</a></li>
 
       </ul>
 
@@ -181,6 +187,8 @@
 
 
      <li><a href="{{route('logout')}}" class="logout" title="Logout">Logout</a></li>
+
+    @endif
 
 
 
