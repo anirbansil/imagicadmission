@@ -119,6 +119,8 @@
                       @endif
                     </div>
 
+                    <div style="flex-basis:100%;width:100%">@include('center-master._location', ['center' => null])</div>
+
                     <div class="form-group">
                       <label>&nbsp;</label>
                       <input type="submit" value="Save" class="finalsubmit">

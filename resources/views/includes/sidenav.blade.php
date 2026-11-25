@@ -20,6 +20,14 @@
 
      <li class="{{ Request::is('my-profile') ? 'active' : '' }}"><a href="{{route('student.profile')}}" class="user" title="My Profile">My Profile</a></li>
 
+     <li class="{{ Request::is('my-courses') ? 'active' : '' }}"><a href="{{route('student.courses')}}" class="course" title="My Courses">My Courses</a></li>
+
+     <li class="{{ Request::is('my-marks') ? 'active' : '' }}"><a href="{{route('student.my-marks')}}" class="reprt" title="My Marks">My Marks</a></li>
+
+     <li class="{{ Request::is('my-attendance') ? 'active' : '' }}"><a href="{{route('student.attendance')}}" class="attendance" title="My Attendance">My Attendance</a></li>
+
+     <li class="{{ Request::is('my-payments*') ? 'active' : '' }}"><a href="{{route('student.payments')}}" class="receipt" title="My Payments">My Payments</a></li>
+
      <li><a href="{{route('logout')}}" class="logout" title="Logout">Logout</a></li>
 
     @else
@@ -34,6 +42,10 @@
 
      <li class="{{ Request::is('checkin-checkout-list') ? 'active' : '' }}"><a href="{{route('checkin-checkout.list')}}" class="attendance" title="Attendance List">Attendance List</a></li>
 
+     @endif
+
+     @if(Auth::guard()->user()->is_admin != 1 && Auth::guard()->user()->branch_id && Auth::guard()->user()->roles->pluck('slug')->contains('center'))
+     <li class="{{ Request::is('my-centre') ? 'active' : '' }}"><a href="{{route('center-master.mine')}}" class="centre" title="My Centre">My Centre</a></li>
      @endif
 
      @if(App\Helpers\Helper::sidenavAccess('user-list'))

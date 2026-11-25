@@ -27,6 +27,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('emi:reminder')->dailyAt('10:00');
+        // Absent / late for 3 classes in a row: warn the student, alert the centre (admin in CC).
+        $schedule->command('attendance:warnings')->dailyAt('21:00')->timezone(config('attendance.timezone'));
         // $schedule->command('emi:reminder')->everyMinute();
     }
 

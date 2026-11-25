@@ -22,5 +22,7 @@ class CourseModule extends Model
         'course_id', 'module_name', 'date', 'created_at', 'updated_at'
     ];
 
-
+    public function subModules() {
+        return $this->hasMany(CourseSubModule::class, "module_id", "id")->orderBy("id", "asc");
+    }
 }

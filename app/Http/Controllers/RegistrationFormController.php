@@ -210,63 +210,10 @@ class RegistrationFormController extends Controller
                 ]);
                 $user->roles()->attach($role->id);
             }
-            $s_to = $request->email;
-            $s_subject = "Imagic Login Details";
-            $s_txt = "Dear  ".$request->first_name." ".$request->last_name.", Congratulation! Welcome to IMAGIC Institute. Here is your login details : Email - ".$request->email." and Password - ".$password.",Regards Imagic";
-            $s_headers = "From: info@pinealmagic.in";
-            mail($s_to,$s_subject,$s_txt,$s_headers);
-            // End new user create
-
-            // Admin Email
-            $to = ['aamina.9k@gmail.com','aamina13khan@gmail.com'];
-          //  $to = "somnath@imagic.net.in,admission@imagic.net.in";
-            $subject = "Registration Form Data";
-            $txt = "Name : ".$request->mr_mrs." ".$request->first_name." ".$request->mid_name." ".$request->last_name."\n";
-            $txt .= "Phone Number : ".$request->mobile_no."\n";
-            $txt .= "Email : ".$request->email."\n";
-            $txt .= "Registration Id : REG-".$registration_id."\n";
-            $headers = "From: info@pinealmagic.in";
-            // mail($to,$subject,$txt,$headers);
-            // Student Email
-            $s_to = $request->email;
-            $s_subject = "Registration Completed";
-            $s_txt = "Dear ".$request->mr_mrs." ".$request->first_name." ".$request->mid_name." ".$request->last_name.", Congratulation! Welcome to IMAGIC Institute. We confirm your registration. Wishing you a colour full career. Your registration no is : REG-".$registration_id;
-            $s_headers = "From: info@pinealmagic.in";
-            mail($s_to,$s_subject,$s_txt,$s_headers);
-            // SMS
-            $url = "https://sms11.infonetservices.in/api/api_http.php";
-            $your_phone = $request->mobile_no;
-              $param = array(
-                  'username' => 'imagic',
-                  'password' => 'imagic122',
-                  'senderid' => 'iMAGIC',
-                  'text' => 'Dear '.$request->mr_mrs.' '.$request->first_name.' '.$request->mid_name.' '.$request->last_name.', Congratulation! Welcome to IMAGIC Institute. We confirm your registration. Wishing you a colour full career.',
-                  'route' => 'Informative',
-                  'type' => 'text',
-                  'datetime' => '2021-02-27 16:30:19',
-                  'to' => $your_phone,
-              );
-              $post = http_build_query($param, '', '&');
-              $ch = curl_init();
-              curl_setopt($ch, CURLOPT_URL, $url);
-              curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-              curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-              curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-              curl_setopt($ch, CURLOPT_HTTPHEADER, array("Connection: close"));
-              $result = curl_exec($ch);
-              if(curl_errno($ch)) {
-                  $result = "cURL ERROR: " . curl_errno($ch) . " " . curl_error($ch);
-              } else {
-                  $returnCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                  switch($returnCode) {
-                      case 200 :
-                          break;
-                      default :
-                          $result = "HTTP ERROR: " . $returnCode;
-                  }
-              }
-              curl_close($ch);
+            // Welcome SMS + email to the student and a notification to the centre (admin in CC)
+            // are sent by App\Services\Notifier once the registration is saved (see below).
             \DB::commit();
+            \App\Services\Notifier::registration($registration_id, $password);
             Session::flash('msg', 'Registration sucessfully completed');
             return redirect()->route('registration-form.index');
         } catch (\Exception $e) {

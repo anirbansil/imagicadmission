@@ -19,8 +19,16 @@ class CenterMaster extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'gst', 'gst_no','sc_per','center_amount','use_amount','center_amount_updated', 'status','created_by','updated_by'
+        'name', 'gst', 'gst_no','sc_per','center_amount','use_amount','center_amount_updated', 'status','created_by','updated_by',
+        'address', 'email', 'latitude', 'longitude', 'geo_radius', 'location_updated_by', 'location_updated_at'
     ];
     
 
+    /**
+     * Who last changed the centre's check-in location.
+     */
+    public function locationEditor()
+    {
+        return $this->belongsTo(User::class, 'location_updated_by');
+    }
 }

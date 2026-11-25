@@ -8,6 +8,7 @@
     ? trim(preg_replace('/\s+/', ' ', $registrations->mr_mrs.' '.$registrations->first_name.' '.$registrations->mid_name.' '.$registrations->last_name))
     : $user->name;
 @endphp
+<div id="main" class="admin_main">
 <style>
   .student-profile-head { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; flex-wrap: wrap; }
   .student-profile-head img { width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 3px solid #eca107; }
@@ -16,7 +17,6 @@
   .student-profile .listingtable th { width: 30%; }
   .student-profile .profile-section { margin-bottom: 25px; }
 </style>
-<div id="main" class="admin_main">
   <div class="admin-inn-contents">
     <div class="container-fluid">
       <h1 class="main-title">{{$title}}

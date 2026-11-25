@@ -35,6 +35,13 @@ use App\Http\Controllers\CenterMasterController;
 use App\Http\Controllers\TutorialVideoController;
 
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\StudentAttendanceController;
+use App\Http\Controllers\AttendanceRequestController;
+use App\Http\Controllers\ClassScheduleController;
+use App\Http\Controllers\StudentCourseController;
+use App\Http\Controllers\StudentMarksController;
+use App\Http\Controllers\StudentPaymentController;
+use App\Http\Controllers\ModuleMarksController;
 
 
 
@@ -90,6 +97,9 @@ Route::post('/registration/store' ,[RegistrationFormController::class,'OutsiderR
 Route::post('/registration/verification' ,[RegistrationFormController::class,'OtpVerification'])->name('registration.outsider.verification');
 Route::get('/registration/otp_verification/{vefication_token}' ,[RegistrationFormController::class,'RegistrationVerification'])->name('registration.verification');
 
+
+// Razorpay webhook for student EMI payments: no login or CSRF, the signature is verified.
+Route::post('/payments/razorpay/webhook', [StudentPaymentController::class, 'webhook'])->name('payments.razorpay.webhook');
 
 Route::group(['middleware' => ['auth', 'student.restrict']], function () {
 
@@ -186,6 +196,10 @@ Route::group(['middleware' => ['auth', 'student.restrict']], function () {
 	Route::post('/center-master/{id}', [CenterMasterController::class, 'update'])->name('center-master.update');
 
 	Route::delete('/center-master/{id}', [CenterMasterController::class, 'destroy'])->name('center-master.delete');
+
+	// My Centre: a centre head sets their own centre's address and check-in location.
+	Route::get('/my-centre', [CenterMasterController::class, 'mine'])->name('center-master.mine');
+	Route::post('/my-centre', [CenterMasterController::class, 'updateMine'])->name('center-master.mine.update');
 
 
 
@@ -299,9 +313,12 @@ Route::group(['middleware' => ['auth', 'student.restrict']], function () {
 	Route::get('/sms-test', [ApplicationReceiptController::class, 'smsTest']);
 	Route::get('/cron-sms', [ApplicationReceiptController::class, 'cronSMS']);
 
-	Route::get('/student_marks_distribution/list', [StudentsController::class, 'MarksList'])->name('student.marks.index');
-	Route::get('/student_marks_distribution/create', [StudentsController::class, 'AddMarks'])->name('student.marks.create');
-	Route::post('/student_marks_distribution/add', [StudentsController::class, 'SaveMarks'])->name('student.marks.save');
+	Route::get('/student_marks_distribution/list', [ModuleMarksController::class, 'index'])->name('student.marks.index');
+	Route::get('/student_marks_distribution/create', [ModuleMarksController::class, 'byModule'])->name('student.marks.create');
+	Route::post('/student_marks_distribution/add', [ModuleMarksController::class, 'saveByModule'])->name('student.marks.save');
+	Route::get('/student_marks_distribution/student/{regId}', [ModuleMarksController::class, 'student'])->name('student.marks.student');
+Route::get('/student_marks_distribution/sheet/{id}',[ModuleMarksController::class, 'sheet'])->name('student.marks.sheet');
+	Route::post('/student_marks_distribution/sheet/{id}', [ModuleMarksController::class, 'saveSheet'])->name('student.marks.sheet.save');
 	Route::get('/module_by_course/{id}', [StudentsController::class, 'ModuleByCourse'])->name('module_by_course');
 	Route::get('/sub_module_by_course_module/{id}', [StudentsController::class, 'SubModule'])->name('sub_module_by_course');
 
@@ -315,12 +332,34 @@ Route::group(['middleware' => ['auth', 'student.restrict']], function () {
 	Route::get('/checkin-checkout-list/export', [DashboardController::class, 'CheckinCheckoutListExport'])->name('checkin-checkout.list.export');
 	Route::get('/student_progress_report', [StudentsController::class, 'ProgressReport'])->name('student.progress.report');
 	Route::delete('/student_marks_distribution/delete/{id}', [StudentsController::class, 'StudentDestory'])->name('student.progress.delete');
-	Route::get('/student_marks_distribution/edit/{id}', [StudentsController::class, 'EditStudentMarks'])->name('student.mark.edit');
-	Route::put('/student_marks_distribution/{id}', [StudentsController::class, 'UpdateStudentMarks'])->name('student.marks.update');
+	Route::get('/student_marks_distribution/edit/{id}', [ModuleMarksController::class, 'legacyEdit'])->name('student.mark.edit');
 	//make student Login
 // 	Route::get('/student-login/', [DashboardController::class, 'studentlogin'])->name('student-login');
 
 	// Student Profile (Student role only, see RestrictStudentAccess middleware)
 	Route::get('/my-profile', [StudentProfileController::class, 'index'])->name('student.profile');
+	Route::get('/my-courses', [StudentCourseController::class, 'index'])->name('student.courses');
+	Route::get('/my-marks', [StudentMarksController::class, 'index'])->name('student.my-marks');
+	Route::get('/my-payments', [StudentPaymentController::class, 'index'])->name('student.payments');
+	Route::post('/my-payments/order/{emi}', [StudentPaymentController::class, 'order'])->name('student.payments.order');
+	Route::post('/my-payments/verify', [StudentPaymentController::class, 'verify'])->name('student.payments.verify');
+	Route::post('/my-payments/failed', [StudentPaymentController::class, 'failed'])->name('student.payments.failed');
+	Route::get('/my-payments/receipt/{emi}', [StudentPaymentController::class, 'receipt'])->name('student.payments.receipt');
+	Route::get('/my-attendance', [StudentAttendanceController::class, 'index'])->name('student.attendance');
+	Route::get('/my-attendance/data', [StudentAttendanceController::class, 'data'])->name('student.attendance.data');
+	Route::post('/my-attendance/check-in', [StudentAttendanceController::class, 'checkIn'])->name('student.attendance.checkin');
+	Route::post('/my-attendance/check-out', [StudentAttendanceController::class, 'checkOut'])->name('student.attendance.checkout');
+	Route::post('/my-attendance/fix', [StudentAttendanceController::class, 'requestFix'])->name('student.attendance.fix');
+	Route::post('/my-attendance/leave', [StudentAttendanceController::class, 'requestLeave'])->name('student.attendance.leave');
+	Route::post('/my-attendance/online', [StudentAttendanceController::class, 'requestOnline'])->name('student.attendance.online');
+	Route::post('/my-attendance/request/{id}/cancel', [StudentAttendanceController::class, 'cancelRequest'])->name('student.attendance.cancel');
+	Route::get('/attendance-requests', [AttendanceRequestController::class, 'index'])->name('attendance-requests.index');
+	Route::post('/attendance-requests/{id}/approve', [AttendanceRequestController::class, 'approve'])->name('attendance-requests.approve');
+	Route::post('/attendance-requests/{id}/reject', [AttendanceRequestController::class, 'reject'])->name('attendance-requests.reject');
+	Route::get('/class-schedules', [ClassScheduleController::class, 'index'])->name('class-schedules.index');
+	Route::post('/class-schedules', [ClassScheduleController::class, 'save'])->name('class-schedules.save');
+	Route::post('/class-schedules/holidays', [ClassScheduleController::class, 'addHoliday'])->name('class-schedules.holidays.add');
+	Route::delete('/class-schedules/holidays/{id}', [ClassScheduleController::class, 'deleteHoliday'])->name('class-schedules.holidays.delete');
+	Route::get('/class-schedules/{id}', [ClassScheduleController::class, 'show'])->name('class-schedules.show');
 
 });

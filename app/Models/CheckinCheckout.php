@@ -19,7 +19,9 @@ class CheckinCheckout extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id','course','module','date','check_in_time','checkout_time'
+        'user_id','course','module','date','check_in_time','checkout_time',
+        'mode','check_in_lat','check_in_lng','check_in_accuracy','check_in_distance',
+        'checkout_lat','checkout_lng','checkout_accuracy','checkout_distance',
     ];
     
 

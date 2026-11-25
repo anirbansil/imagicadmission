@@ -19,7 +19,8 @@ class StudentMarks extends Model
      * @var array
      */
     protected $fillable = [
-        'stdnt_id','course_name', 'module_name','sub_module_name','marks','practical_marks','total_marks','created_by'
+        'stdnt_id','course_name', 'module_name','sub_module_name','marks','practical_marks','total_marks','created_by',
+        'module_id', 'faculty_id', 'exam_date', 'theory_full_marks', 'practical_full_marks', 'updated_by'
     ];
 
     public function student(){

@@ -1,193 +1,137 @@
 @extends('layout')
 @section('title', $title)
 @section('content')
-
+@php
+  $pct = function ($p) { return App\Services\StudentResults::formatPercentage($p); };
+  $fmt = function ($d) { $d = App\Services\StudentEnrolments::date($d); return $d ? $d->format('d M Y') : '—'; };
+@endphp
 <div id="main" class="admin_main">
+@include('module_marks_master._styles')
   <div class="admin-inn-contents">
-      <div class="container-fluid">
-        <h1 class="main-title">
-          <nav aria-label="breadcrumb">
-            <ul class="breadcrumb">
-              <li class="breadcrumb-item">
-                <a href="{{route('dashboard')}}"><i class="fa fa-home" aria-hidden="true"></i>Dashboard</a></li>
-              <li class="breadcrumb-item active" aria-current="page">{{$title}}</li>
-            </ul>
-          </nav>
-        </h1>
-          @if(Session::has('msg'))
-           <div class="alert alert-success alert-dismissible">
-             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-             {{session('msg')}}
-           </div>
-           @elseif(Session::has('error'))
-           <div class="alert alert-danger alert-dismissible">
-             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-             {{session('error')}}
-           </div>
-          @endif
-        <div class="dashboard-materials">
-          <div class="relg-new-struct-add">
-            @if(Auth::guard()->user()->is_admin == 1)
-              <input type="hidden" name="baseurl" id="baseurl" value="{{  url('/')}}">
-                  <form action="{{route('student.marks.index')}}" method="get">
-                    <div class="filter_row">
-                      <div class="filter_div row">
-                          <div class="col-xs-12 col-md-3 col-sm-6">
-                              <div class="form-group">
-                                  <select class="form-control" name="search_by_center">
-                                      @if(Auth::guard()->user()->is_admin == 1)
-                                      <option value="">select centre</option>
-                                      @endif  
-                                      @foreach ($centerDetails as $center)
-                                          <option value="{{ $center->id }}"
-                                              @if (!empty($request->search_by_center) && $request->search_by_center == $center->id) selected @endif>
-                                              {{ $center->name }}</option>
-                                      @endforeach
-                                  </select>
-                              </div>
-                          </div>
-                          <div class="col-xs-12 col-md-3 col-sm-6">
-                            <div class="form-group">
-                                <select name="course_name" class="form-control course_name" data-target="1"  id="course_name1" required><option value="">Select Course</option>
-                                    @foreach($courses as $course)
-                                    <option value="{{$course->id}}"  @if (!empty($request->course_name) && $request->course_name == $course->id) selected @endif>{{$course->name}}</option>
-                                    @endforeach
-                                  </select>
-                            </div>
-                          </div>
-                          <div class="col-xs-12 col-md-3 col-sm-6">
-                            <div class="form-group">
-                                  <select name="module_name" class="form-control module_name" id="module_name1" >
-                                    <option value="">Select Module</option>
-                                    @if(!empty($module))
-                                    @foreach($module as $key=>$value)
-                                    <option value="{{$value->module_name}}" @if(!empty($request->module_name) && $request->module_name == $value->module_name) selected @endif>{{$value->module_name}}</option>
-                                    @endforeach
-                                    @endif
-                                  </select>
-                            </div>
-                          </div>
-                          <div class="col-xs-12 col-md-3 col-sm-6">
-                            <div class="form-group">
-                                  <select name="student" class="form-control student_name" id="student_name1" >
-                                    <option value="">Select Student</option>
-                                   
-                                    @if(!empty($students))
-                                    @foreach($students as $student)
-                                   
-                                    <option value="{{$student->id}}"  @if(!empty($request->student) && $request->student == $student->id) selected @endif>{{$student->regDetails->first_name}}&nbsp;{{$student->regDetails->last_name}}</option>
-                                    @endforeach
-                                    @endif
-                                  </select>
-                            </div>
-                          </div>
-                          <div class="col-xs-12 col-md-3 col-sm-6">
-                            <button type="submit" class="btn btn-info">Search</button>
-                            <a href="{{ route('student.marks.index') }}" class="reset">Reset</a>
-                          </div>
-                      </div>
-                    </div>
-                  </form>
-                  @endif
-                  @if(Auth::guard()->user()->roles[0]->slug != 'student') 
-                  <div class="row">
-                    <div class="add-new-strc col">
-                      <a class="add-new-strc-btn" href="{{route('student.marks.create')}}">Add Marks</a>
-                    </div>
-                    {{-- <div class="add-new-strc col">
-                      <a class="add-new-strc-btn" href="{{route('student.marks.export')}}">Export</a>
-                    </div>
-                   <div class="add-new-strc col">
-                      <a class="add-new-strc-btn" href="{{route('student.progress.report')}}">ProgressReport</a>
-                    </div> --}}
-                  </div>
-           @endif
-            <div class="relg-list">
-              <div class="table-responsive">
-                <table class="listingtable">
-                  <tr>
-                    <th>Sl No</th>
-                    <th>Student Name</th>
-                    <th>Course Name</th>
-                    <th>Module Name</th>
-                    {{--  <th>Sub Module Name</th> --}}
-                    <th>Theory Marks</th>
-                     <th>Practical Marks</th>
-                     <th>Total</th>
-                    <th>Created_by</th>
-                    <th>Action</th>
-                  </tr>
-                  @php $a=($marks_list->currentpage()-1)* $marks_list->perpage() + 1; @endphp
-                    @forelse($marks_list as $marks)
-                <tr>
-                    <td>{{$a}}</td>
-                    <td>{{optional(optional($marks->student)->regDetails)->first_name}} &nbsp; {{optional(optional($marks->student)->regDetails)->mid_name}} &nbsp; {{optional(optional($marks->student)->regDetails)->last_name}}</td>
-                    <td>{{optional($marks->courseName)->name}}</td>
-                    <td>{{$marks->module_name}}</td>
-                    {{-- <td>{{$marks->sub_module_name}}</td> --}}
-                    <td>{{$marks->marks}}</td>
-                    <td>{{$marks->practical_marks}}</td>
-                    <td>{{$marks->total_marks}}</td>
-                    <td>{{optional($marks->user)->name}}</td>
-                    <td> @if(Auth::guard()->user()->is_admin == 1) 
-                      <a class="edit" href="{{route('student.mark.edit', $marks->id)}}"><img src="{{asset('public/images/draw.png')}}"></a>
-                      
-                      @php
-                        $deleteroute = route('student.progress.delete', ['id'=>$marks->id]);
-                      @endphp
-                      <a href="javascript:void(0)" onclick="deleteData('{{$deleteroute}}','{{csrf_token()}}')" class="delete">
-                        <i class="fa fa-trash-o" aria-hidden="true"></i>
-                      </a>
-                      @endif
-                     
-                    </td>
-                </tr>
-                @php $a++; @endphp
-                @empty
-                <tr><td colspan="12">No Data </td></tr>
-                @endforelse
-                </table>
-              </div>
-            </div>
-            <div class="pagination-sec">
-              {{$marks_list->links()}}
-            </div>
-          </div>
-        </div>
-        @if(!empty($request->student) && $request->student)
-          <div class="dashboard-materials">
-            <div class="relg-new-struct-add">
-                <div class="filter_div row ">
-                    <div class="col-lg-12 col-md-5 col-sm-5">
-                        <div id="chart_div"></div>
-                    </div>
-                </div>
-            </div>
+    <div class="container-fluid">
+      <h1 class="main-title">{{$title}}
+        <nav aria-label="breadcrumb">
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{route('dashboard')}}"><i class="fa fa-home" aria-hidden="true"></i>Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{$title}}</li>
+          </ul>
+        </nav>
+      </h1>
+
+      <div class="dashboard-materials mk-page">
+        @if(Session::has('msg'))
+          <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>{{ session('msg') }}
           </div>
         @endif
+
+        <div class="mk-card">
+          <div class="mk-card-head">
+            <div>
+              <h3>Student Results</h3>
+              <p>One row per course enrolment. Click a student's name to see all their courses, or open a result sheet to add or edit marks for one course.</p>
+            </div>
+            <a class="mk-btn accent" href="{{ route('student.marks.create') }}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Enter Marks by Module</a>
+          </div>
+          <form class="mk-filters" method="get" action="{{ route('student.marks.index') }}">
+            <div class="mk-field wide">
+              <label for="mk-q">Student</label>
+              <input id="mk-q" type="search" name="q" value="{{ $request->q }}" class="form-control" placeholder="Name, registration no., application no., phone">
+            </div>
+            <div class="mk-field wide">
+              <label for="mk-course">Course</label>
+              <select id="mk-course" name="course" class="form-control">
+                <option value="">All courses</option>
+                @foreach($courseOptions as $c)
+                <option value="{{ $c->id }}" @if($request->course == $c->id) selected @endif>{{ $c->name }}</option>
+                @endforeach
+              </select>
+            </div>
+            @if($seesAll)
+            <div class="mk-field">
+              <label for="mk-center">Center</label>
+              <select id="mk-center" name="center" class="form-control">
+                <option value="">All centers</option>
+                @foreach($centers as $c)
+                <option value="{{ $c->id }}" @if($request->center == $c->id) selected @endif>{{ $c->name }}</option>
+                @endforeach
+              </select>
+            </div>
+            @endif
+            <div class="mk-field">
+              <label for="mk-batch">Batch</label>
+              <select id="mk-batch" name="batch" class="form-control">
+                <option value="all" @if(($request->batch ?: 'all') === 'all') selected @endif>All batches</option>
+                <option value="current" @if($request->batch === 'current') selected @endif>Current</option>
+                <option value="completed" @if($request->batch === 'completed') selected @endif>Completed</option>
+              </select>
+            </div>
+            <div class="mk-actions">
+              <button type="submit" class="mk-btn primary"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+              <a href="{{ route('student.marks.index') }}" class="mk-link">Reset</a>
+            </div>
+          </form>
+        </div>
+
+        <div class="mk-card">
+          <div class="table-responsive">
+            <table class="mk-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Course</th>
+                  <th>Batch</th>
+                  <th>Modules Evaluated</th>
+                  <th class="num">Marks</th>
+                  <th class="num">Overall</th>
+                  <th class="center">Grade</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse($applications as $a)
+                @php
+                  $s = $sheets[$a->id];
+                  $r = $a->regDetails;
+                  $name = $r ? trim(preg_replace('/\s+/', ' ', $r->first_name.' '.$r->mid_name.' '.$r->last_name)) : '—';
+                @endphp
+                <tr>
+                  <td>
+                    @if($r)
+                    <a href="{{ route('student.marks.student', $r->id) }}" class="mk-student-link" title="All courses of {{ $name }}"><strong>{{ $name }}</strong></a>
+                    @if(($courseCounts[$r->id] ?? 1) > 1)<span class="mk-count">{{ $courseCounts[$r->id] }} courses</span>@endif
+                    @else
+                    <strong>{{ $name }}</strong>
+                    @endif
+                    <small>{{ optional($r)->roll_no }}@if($r && $seesAll) · {{ App\Helpers\Helper::getCenterName($r->center_name) }}@endif</small>
+                  </td>
+                  <td>
+                    {{ optional($courses->get($a->course))->name ?? '—' }}
+                    <small>{{ $a->application_id }}</small>
+                  </td>
+                  <td class="mk-muted" style="white-space: nowrap">{{ $fmt($a->batch_start_date) }}<small>to {{ $fmt($a->batch_end_date) }}</small></td>
+                  <td>
+                    @if($s->total)
+                    <div class="mk-bar"><span><i style="width: {{ round($s->evaluated * 100 / $s->total) }}%"></i></span><b>{{ $s->evaluated }}/{{ $s->total }}</b></div>
+                    @else
+                    <span class="mk-muted">No modules</span>
+                    @endif
+                  </td>
+                  <td class="num">{{ $s->evaluated ? $s->obtained.' / '.$s->full : '—' }}</td>
+                  <td class="num"><strong>{{ $pct($s->percentage) }}</strong></td>
+                  <td class="center">@include('module_marks_master._grade', ['grade' => $s->grade])</td>
+                  <td class="num"><a class="mk-btn small" href="{{ route('student.marks.sheet', $a->id) }}"><i class="fa fa-list-alt" aria-hidden="true"></i> Result sheet</a></td>
+                </tr>
+                @empty
+                <tr><td colspan="8" class="mk-empty">No students match these filters.</td></tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pagination-sec">{{ $applications->links() }}</div>
       </div>
+    </div>
   </div>
 </div>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script>
-    google.charts.load('current', {'packages': ['corechart']});
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart() {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Module Name');
-        data.addColumn('number', 'Student Total Marks');
-        // Populate data from the variable passed by the controller
-
-        @foreach($marks_list as $item)
-                data.addRow(['{{ $item->module_name }}',{{ $item->total_marks }}]);            
-        @endforeach
-
-        var options = {
-            title: 'Student Progress CHart ',
-        };
-        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
-    }
-</script>
 @endsection

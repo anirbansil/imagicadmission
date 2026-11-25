@@ -34,7 +34,7 @@
                  @csrf
                   <div class="form-inline">
                     <div class="form-group">
-                      <label>Course Name
+                      <label>Centre Name
                         <span class="required_field">*</span>
                       </label>
                       <input type="text" name="name" class="form-control required_field" value="{{old('name')? old('name') : $category->name}}">
@@ -120,6 +120,8 @@
                       <span class="error">{{$errors->first('status')}}</span>
                       @endif
                     </div>
+
+                    <div style="flex-basis:100%;width:100%">@include('center-master._location', ['center' => $category])</div>
 
                     <div class="form-group">
                       <label>&nbsp;</label>

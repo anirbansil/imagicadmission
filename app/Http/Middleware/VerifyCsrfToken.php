@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        //
+        'payments/razorpay/webhook', // called by Razorpay; its signature is verified instead
     ];
 }

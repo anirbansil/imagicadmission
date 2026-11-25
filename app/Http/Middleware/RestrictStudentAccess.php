@@ -11,6 +11,21 @@ class RestrictStudentAccess {
 	 */
 	const STUDENT_ROUTES = [
 		'student.profile',
+		'student.courses',
+		'student.my-marks',
+		'student.payments',
+		'student.payments.order',
+		'student.payments.verify',
+		'student.payments.failed',
+		'student.payments.receipt',
+		'student.attendance',
+		'student.attendance.data',
+		'student.attendance.checkin',
+		'student.attendance.checkout',
+		'student.attendance.fix',
+		'student.attendance.leave',
+		'student.attendance.online',
+		'student.attendance.cancel',
 		'logout',
 	];
 

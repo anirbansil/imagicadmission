@@ -158,6 +158,12 @@
               </form>
               <div class="row">
                 <div class="add-new-strc col">
+                  <a class="add-new-strc-btn" href="{{route('attendance-requests.index')}}">Student Requests</a>
+                </div>
+                <div class="add-new-strc col">
+                  <a class="add-new-strc-btn" href="{{route('class-schedules.index')}}">Class Schedules</a>
+                </div>
+                <div class="add-new-strc col">
                   <a class="add-new-strc-btn" href="{{route('checkin-checkout.list.export',['course_name'=>!empty($request->course_name) ? $request->course_name :'' ,'module_name'=>!empty($request->module_name) ? $request->module_name:''])}}">Export</a>
                 </div>
                 {{-- <div class="add-new-strc col">
@@ -177,6 +183,7 @@
                   <th>Checkin Time</th>
                   <th>Checkout Time</th>
                   <th>Total Time</th>
+                  <th>Location</th>
                 </tr>
                 @php $a=($checkin_list->currentpage()-1)* $checkin_list->perpage() + 1; @endphp
                   @forelse($checkin_list as $list)
@@ -189,10 +196,15 @@
                 <td>{{\Carbon\Carbon::parse(@$list->check_in_time)->format('h:i A')}}</td>
                 <td>{{@$list->checkout_time != null ? \Carbon\Carbon::parse(@$list->checkout_time)->format('h:i A') : "Didn't Checkout"}}</td>
                 <td>{{@$list->checkout_time != null ? (new \Carbon\Carbon(@$list->check_in_time))->diff(new \Carbon\Carbon(@$list->checkout_time))->format('%h:%I:%s') : '00:00'}}</td>
+                <td>
+                  @if(@$list->mode == 'online')<span title="Approved online class">Online class</span>
+                  @elseif(@$list->mode == 'campus')<span title="Checked at the center">At center</span><br><small>in {{$list->check_in_distance}} m@if($list->checkout_distance !== null) · out {{$list->checkout_distance}} m@endif</small>
+                  @else &mdash; @endif
+                </td>
                </tr>
                @php $a++; @endphp
                @empty
-               <tr><td colspan="6">No Data </td></tr>
+               <tr><td colspan="9">No Data </td></tr>
                @endforelse
               </table>
             </div>
